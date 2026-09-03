@@ -22,7 +22,14 @@ export default function Footer() {
         </div>
         <SocialLinks className="text-cream" />
         <p className="text-xs text-cream/50">
-          © 2026 {business.name}. All rights reserved. · Privacy Policy · Terms of Service
+          © {new Date().getFullYear()} {business.name}. All rights reserved. ·{" "}
+          <Link href="/privacy" className="hover:text-cream underline">
+            Privacy Policy
+          </Link>{" "}
+          ·{" "}
+          <Link href="/terms" className="hover:text-cream underline">
+            Terms of Service
+          </Link>
         </p>
       </div>
     </footer>
