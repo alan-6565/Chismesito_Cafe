@@ -34,7 +34,7 @@ const MODIFIER_GROUPS: ModifierGroupDef[] = [
   {
     key: "milk_options",
     label: "Milk Options",
-    selectionType: "multi",
+    selectionType: "single",
     required: true,
     options: [
       { label: "Whole Milk", priceCents: 0 },
