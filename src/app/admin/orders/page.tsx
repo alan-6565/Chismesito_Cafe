@@ -172,10 +172,18 @@ function OrderCard({
           </span>
           <span
             className={`text-[10px] font-semibold uppercase tracking-wide rounded-full px-2.5 py-1 ${
-              order.payment_status === "paid" ? "bg-emerald-100 text-emerald-800" : "bg-ink/10 text-ink/60"
+              order.payment_status === "paid"
+                ? "bg-emerald-100 text-emerald-800"
+                : order.payment_method === "online"
+                  ? "bg-amber-100 text-amber-800"
+                  : "bg-ink/10 text-ink/60"
             }`}
           >
-            {order.payment_status === "paid" ? "Paid Online" : "Pay at Pickup"}
+            {order.payment_status === "paid"
+              ? "Paid Online"
+              : order.payment_method === "online"
+                ? "Payment Pending"
+                : "Pay at Pickup"}
           </span>
         </div>
       </div>

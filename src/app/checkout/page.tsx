@@ -11,31 +11,33 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<"pickup" | "online" | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const cartPayload = () => ({
+    customerName: name,
+    customerPhone: phone,
+    items: items.map((i) => ({
+      menuItemId: i.menuItemId,
+      sizeId: i.sizeId,
+      optionIds: i.modifiers.map((m) => m.optionId),
+      quantity: i.quantity,
+    })),
+  });
 
   const submitPickupOrder = async () => {
     if (!name.trim()) {
       setError("Please enter your name so we know who's picking up.");
       return;
     }
-    setSubmitting(true);
+    setSubmitting("pickup");
     setError(null);
 
     try {
       const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          customerName: name,
-          customerPhone: phone,
-          items: items.map((i) => ({
-            menuItemId: i.menuItemId,
-            sizeId: i.sizeId,
-            optionIds: i.modifiers.map((m) => m.optionId),
-            quantity: i.quantity,
-          })),
-        }),
+        body: JSON.stringify(cartPayload()),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong");
@@ -44,7 +46,32 @@ export default function CheckoutPage() {
       router.push(`/order/confirmation/${data.orderId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-      setSubmitting(false);
+      setSubmitting(null);
+    }
+  };
+
+  const submitOnlinePayment = async () => {
+    if (!name.trim()) {
+      setError("Please enter your name so we know who's picking up.");
+      return;
+    }
+    setSubmitting("online");
+    setError(null);
+
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cartPayload()),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.url) throw new Error(data.error || "Something went wrong");
+
+      clear();
+      window.location.href = data.url;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setSubmitting(null);
     }
   };
 
@@ -114,21 +141,21 @@ export default function CheckoutPage() {
         <div className="grid sm:grid-cols-2 gap-3 mt-2">
           <button
             onClick={submitPickupOrder}
-            disabled={submitting}
+            disabled={submitting !== null}
             className="rounded-full bg-rose hover:bg-rose-dark disabled:opacity-60 text-white font-semibold px-6 py-3 text-sm transition-colors"
           >
-            {submitting ? "Placing order..." : "Order Ahead — Pay at Pickup"}
+            {submitting === "pickup" ? "Placing order..." : "Order Ahead — Pay at Pickup"}
           </button>
           <button
-            disabled
-            title="Online payment is coming soon"
-            className="rounded-full border-2 border-maroon/30 text-maroon/40 font-semibold px-6 py-3 text-sm cursor-not-allowed"
+            onClick={submitOnlinePayment}
+            disabled={submitting !== null}
+            className="rounded-full border-2 border-maroon text-maroon font-semibold px-6 py-3 text-sm hover:bg-maroon hover:text-cream disabled:opacity-60 transition-colors"
           >
-            Pay Online Now (coming soon)
+            {submitting === "online" ? "Redirecting to payment..." : "Pay Online Now"}
           </button>
         </div>
         <p className="text-xs text-ink/40 text-center">
-          Order ahead now, pay with card or cash when you pick it up in-store.
+          Pay online now, or order ahead and pay with card or cash when you pick it up in-store.
         </p>
       </div>
     </div>

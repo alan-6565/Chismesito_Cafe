@@ -1,27 +1,44 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
+import { stripe } from "@/lib/stripe";
 import { formatCents } from "@/lib/money";
 
 export default async function OrderConfirmationPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ session_id?: string }>;
 }) {
   const { id } = await params;
+  const { session_id } = await searchParams;
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, total_cents, fulfillment_status")
+    .select("id, created_at, customer_name, total_cents, fulfillment_status, payment_method, payment_status")
     .eq("id", id)
     .single();
 
   if (!order) notFound();
 
+  // The webhook usually flips payment_status to "paid" within a second or two,
+  // but if the customer lands back here before it arrives, double-check
+  // directly with Stripe rather than showing a stale "unpaid" order.
+  if (order.payment_method === "online" && order.payment_status !== "paid" && session_id) {
+    const session = await stripe.checkout.sessions.retrieve(session_id);
+    if (session.payment_status === "paid") {
+      await supabaseAdmin.from("orders").update({ payment_status: "paid" }).eq("id", id);
+      order.payment_status = "paid";
+    }
+  }
+
   const { data: items } = await supabaseAdmin
     .from("order_items")
     .select("name_snapshot, price_cents_snapshot, quantity, size_label, modifiers")
     .eq("order_id", id);
+
+  const paidOnline = order.payment_method === "online" && order.payment_status === "paid";
 
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-16 text-center">
@@ -30,7 +47,9 @@ export default async function OrderConfirmationPage({
         Thanks, {order.customer_name}!
       </h1>
       <p className="mt-2 text-ink/60">
-        Your order is in. Show this confirmation (or your name) at pickup and pay in-store.
+        {paidOnline
+          ? "Your order is paid and in. Show this confirmation (or your name) at pickup."
+          : "Your order is in. Show this confirmation (or your name) at pickup and pay in-store."}
       </p>
       <p className="mt-1 text-xs text-ink/40 font-mono">Order #{order.id.slice(0, 8)}</p>
 
@@ -53,7 +72,7 @@ export default async function OrderConfirmationPage({
           );
         })}
         <div className="border-t border-blush pt-3 flex items-center justify-between font-semibold text-maroon">
-          <span>Total due at pickup</span>
+          <span>{paidOnline ? "Total paid" : "Total due at pickup"}</span>
           <span>{formatCents(order.total_cents)}</span>
         </div>
       </div>
