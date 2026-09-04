@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { formatCents } from "@/lib/money";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 export default async function OrderConfirmationPage({
   params,
@@ -28,8 +29,13 @@ export default async function OrderConfirmationPage({
   if (order.payment_method === "online" && order.payment_status !== "paid" && session_id) {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     if (session.payment_status === "paid") {
-      await supabaseAdmin.from("orders").update({ payment_status: "paid" }).eq("id", id);
+      const stripeEmail = session.customer_details?.email;
+      await supabaseAdmin
+        .from("orders")
+        .update({ payment_status: "paid", ...(stripeEmail ? { customer_email: stripeEmail } : {}) })
+        .eq("id", id);
       order.payment_status = "paid";
+      sendOrderConfirmationEmail(id).catch(() => {});
     }
   }
 

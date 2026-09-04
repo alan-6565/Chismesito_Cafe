@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { priceCartLines, type CartLine } from "@/lib/pricing";
+import { sendOrderConfirmationEmail } from "@/lib/email";
 
 type CartPayload = {
   customerName: string;
   customerPhone?: string;
+  customerEmail?: string;
   items: CartLine[];
 };
 
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as CartPayload;
-  const { customerName, customerPhone, items } = body;
+  const { customerName, customerPhone, customerEmail, items } = body;
 
   if (!customerName?.trim() || !items?.length) {
     return NextResponse.json({ error: "Missing name or items" }, { status: 400 });
@@ -26,6 +28,7 @@ export async function POST(req: NextRequest) {
     .insert({
       customer_name: customerName.trim(),
       customer_phone: customerPhone?.trim() || null,
+      customer_email: customerEmail?.trim() || null,
       payment_method: "pickup",
       payment_status: "unpaid",
       fulfillment_status: "pending",
@@ -45,6 +48,9 @@ export async function POST(req: NextRequest) {
   if (itemsError) {
     return NextResponse.json({ error: "Could not save order items" }, { status: 500 });
   }
+
+  // Pay-at-pickup orders are confirmed immediately, no payment gate to wait on.
+  sendOrderConfirmationEmail(order.id).catch(() => {});
 
   return NextResponse.json({ orderId: order.id, totalCents: priced.totalCents });
 }

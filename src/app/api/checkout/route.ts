@@ -6,12 +6,13 @@ import { priceCartLines, type CartLine } from "@/lib/pricing";
 type CartPayload = {
   customerName: string;
   customerPhone?: string;
+  customerEmail?: string;
   items: CartLine[];
 };
 
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as CartPayload;
-  const { customerName, customerPhone, items } = body;
+  const { customerName, customerPhone, customerEmail, items } = body;
 
   if (!customerName?.trim() || !items?.length) {
     return NextResponse.json({ error: "Missing name or items" }, { status: 400 });
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
     .insert({
       customer_name: customerName.trim(),
       customer_phone: customerPhone?.trim() || null,
+      customer_email: customerEmail?.trim() || null,
       payment_method: "online",
       payment_status: "pending",
       fulfillment_status: "pending",
@@ -55,6 +57,7 @@ export async function POST(req: NextRequest) {
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
     payment_method_types: ["card"],
+    customer_email: customerEmail?.trim() || undefined,
     line_items: priced.orderItemsPayload.map((item) => ({
       quantity: item.quantity,
       price_data: {

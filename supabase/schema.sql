@@ -70,6 +70,9 @@ create table if not exists orders (
   total_cents integer not null default 0
 );
 
+alter table orders add column if not exists customer_email text;
+alter table orders add column if not exists confirmation_email_sent_at timestamptz;
+
 create table if not exists order_items (
   id uuid primary key default gen_random_uuid(),
   order_id uuid not null references orders(id) on delete cascade,

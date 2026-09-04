@@ -11,12 +11,14 @@ export default function CheckoutPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState<"pickup" | "online" | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const cartPayload = () => ({
     customerName: name,
     customerPhone: phone,
+    customerEmail: email,
     items: items.map((i) => ({
       menuItemId: i.menuItemId,
       sizeId: i.sizeId,
@@ -132,6 +134,18 @@ export default function CheckoutPage() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="For pickup updates"
+            className="w-full rounded-xl border border-blush px-4 py-2.5 text-sm focus:outline-none focus:border-rose"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-maroon mb-1">
+            Email <span className="text-ink/40">(optional — for a confirmation email)</span>
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="you@example.com"
             className="w-full rounded-xl border border-blush px-4 py-2.5 text-sm focus:outline-none focus:border-rose"
           />
         </div>
