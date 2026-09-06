@@ -1,3 +1,4 @@
+import Image from "next/image";
 import PlaceholderImage from "@/components/PlaceholderImage";
 import { business } from "@/lib/data";
 
@@ -25,7 +26,15 @@ export default function AboutPage() {
       <div className="grid grid-cols-2 gap-4">
         <PlaceholderImage emoji="👩‍🍳" label="Founders" className="h-40 rounded-2xl" />
         <PlaceholderImage emoji="☕" label="Handcrafted drinks" className="h-40 rounded-2xl mt-6" />
-        <PlaceholderImage emoji="🏪" label="Storefront" className="h-40 rounded-2xl -mt-6" />
+        <div className="relative h-40 rounded-2xl overflow-hidden -mt-6">
+          <Image
+            src="/images/storefront.png"
+            alt="Chismesito Cafe storefront in Richmond, CA"
+            fill
+            sizes="(min-width: 1024px) 25vw, 45vw"
+            className="object-cover"
+          />
+        </div>
         <PlaceholderImage emoji="💕" label="Community" className="h-40 rounded-2xl" />
       </div>
     </div>
