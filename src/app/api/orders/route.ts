@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { priceCartLines, type CartLine } from "@/lib/pricing";
 import { sendOrderConfirmationEmail } from "@/lib/email";
-import { notifyStaffOfNewOrder } from "@/lib/sms";
+import { notifyStaffOfNewOrder } from "@/lib/staff-notify";
 
 type CartPayload = {
   customerName: string;

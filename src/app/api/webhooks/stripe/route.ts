@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendOrderConfirmationEmail } from "@/lib/email";
-import { notifyStaffOfNewOrder } from "@/lib/sms";
+import { notifyStaffOfNewOrder } from "@/lib/staff-notify";
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("stripe-signature");

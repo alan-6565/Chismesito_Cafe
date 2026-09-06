@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { formatCents } from "@/lib/money";
 import { sendOrderConfirmationEmail } from "@/lib/email";
-import { notifyStaffOfNewOrder } from "@/lib/sms";
+import { notifyStaffOfNewOrder } from "@/lib/staff-notify";
 import ClearCartOnMount from "@/components/ClearCartOnMount";
 
 export default async function OrderConfirmationPage({
