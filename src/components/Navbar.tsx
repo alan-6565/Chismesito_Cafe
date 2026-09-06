@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import Logo from "./Logo";
+import OpenStatusBadge from "./OpenStatusBadge";
 import { business } from "@/lib/data";
 import { useCart } from "@/lib/cart-context";
 
@@ -42,6 +43,7 @@ export default function Navbar() {
           <span className="font-display font-bold text-lg text-maroon hidden sm:inline">
             {business.name}
           </span>
+          <OpenStatusBadge className="hidden sm:inline-flex" />
         </Link>
 
         <nav className="hidden lg:flex items-center gap-7 font-medium text-sm text-maroon">

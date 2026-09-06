@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/next";
 import { Fraunces, Dancing_Script, Poppins } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import MobileTabBar from "@/components/MobileTabBar";
 import CartDrawer from "@/components/CartDrawer";
+import StructuredData from "@/components/StructuredData";
 import { CartProvider } from "@/lib/cart-context";
 import { business } from "@/lib/data";
 
@@ -56,6 +58,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${fraunces.variable} ${dancing.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-cream text-ink">
+        <StructuredData />
         <CartProvider>
           <Navbar />
           <main className="flex-1 pb-16 md:pb-0">{children}</main>
@@ -63,6 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <MobileTabBar />
           <CartDrawer />
         </CartProvider>
+        <Analytics />
       </body>
     </html>
   );

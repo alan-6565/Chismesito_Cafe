@@ -20,18 +20,37 @@ export const promotion = {
   cta: "Enter Giveaway",
 };
 
+const streetAddress = "1723 Barrett Ave";
+const city = "Richmond";
+const state = "CA";
+const zip = "94801";
+
 export const business = {
   name: "Chismesito Cafe",
   tagline: "Coffee with a little chisme",
   subtitle: "Specialty drinks, good vibes, and a place to spill the tea.",
-  address: "1723 Barrett Ave, Richmond, CA 94801",
+  streetAddress,
+  city,
+  state,
+  zip,
+  address: `${streetAddress}, ${city}, ${state} ${zip}`,
   hours: "Mon–Fri 7:00 AM – 7:00 PM · Sat–Sun 8:00 AM – 7:00 PM",
   phone: "(510) 691-3583",
   instagram: "@chismesitocafe",
+  instagramUrl: "https://www.instagram.com/chismesitocafe",
   tiktok: "@chismesitocafe",
+  tiktokUrl: "https://www.tiktok.com/@chismesitocafe",
   facebook: "Chismesito Cafe",
   doordashUrl:
     "https://www.doordash.com/en/store/chismesito-cafe-richmond-46863232/112528855/?srsltid=AfmBOooTrX8BaXsk3e0zcuyZtOBN34yoTL3niaIafowiZoebURYRvVMk",
   story:
     "Chismesito Cafe was created with the idea of bringing people together over great coffee, delicious drinks, and even better conversations. What started as a dream between friends turned into a cozy corner of Richmond where neighbors stop in for their daily cup — and stay for the chisme. Thank you for supporting our small business. We can't wait to serve you.",
 };
+
+// Kept structured (rather than parsed from the display `hours` string above)
+// so the "Open Now" badge and search-engine structured data can't drift out
+// of sync with each other. days: 0=Sun..6=Sat.
+export const openingHours: { days: number[]; opens: string; closes: string }[] = [
+  { days: [1, 2, 3, 4, 5], opens: "07:00", closes: "19:00" },
+  { days: [0, 6], opens: "08:00", closes: "19:00" },
+];
