@@ -110,18 +110,4 @@ export async function getMenu(): Promise<MenuItemFull[]> {
   });
 }
 
-export const CATEGORY_ORDER = [
-  "Hot Drinks",
-  "Classic Lattes",
-  "Signature Matchas",
-  "Iced Signature Lattes",
-  "Iced Classics Lattes",
-  "Signature Chai",
-  "Juice",
-  "Specialty",
-  "Refreshers and Lemonade",
-  "Fall Menu",
-  "Snacks",
-  "Pastries",
-  "Sago",
-];
+export { CATEGORY_ORDER } from "./menu-categories";
