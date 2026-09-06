@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatCents } from "@/lib/money";
+import { enableSound, isSoundEnabled, playChime } from "@/lib/notify-sound";
 
 type OrderItem = {
   name_snapshot: string;
@@ -41,11 +42,19 @@ const STATUS_STYLES: Record<Order["fulfillment_status"], string> = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+// Actionable = a new order staff should notice and start on. Excludes
+// online orders still unpaid — nothing to prepare until payment lands.
+function needsAttention(order: Order): boolean {
+  return order.fulfillment_status === "pending" && (order.payment_method === "pickup" || order.payment_status === "paid");
+}
+
 export default function AdminOrdersPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
+  const [soundOn, setSoundOn] = useState(false);
+  const prevAttentionCount = useRef(0);
 
   const load = useCallback(async () => {
     const res = await fetch("/api/admin/orders");
@@ -61,6 +70,34 @@ export default function AdminOrdersPage() {
     const interval = setInterval(load, 10000);
     return () => clearInterval(interval);
   }, [load]);
+
+  const attentionCount = orders.filter(needsAttention).length;
+
+  // Ding immediately when a new order needing attention shows up, then keep
+  // dinging every 30s for as long as at least one is still unclaimed.
+  useEffect(() => {
+    if (attentionCount > prevAttentionCount.current && isSoundEnabled()) {
+      playChime();
+    }
+    prevAttentionCount.current = attentionCount;
+  }, [attentionCount]);
+
+  useEffect(() => {
+    const alertInterval = setInterval(() => {
+      if (attentionCount > 0 && isSoundEnabled()) {
+        playChime();
+      }
+    }, 30000);
+    return () => clearInterval(alertInterval);
+  }, [attentionCount]);
+
+  useEffect(() => {
+    document.title =
+      attentionCount > 0 ? `(${attentionCount}) New Order — Chismesito` : "Chismesito Cafe | Orders";
+    return () => {
+      document.title = "Chismesito Cafe | Coffee with a little chisme";
+    };
+  }, [attentionCount]);
 
   const updateStatus = async (id: string, fulfillmentStatus: Order["fulfillment_status"]) => {
     setUpdating(id);
@@ -89,6 +126,20 @@ export default function AdminOrdersPage() {
           <p className="text-xs text-ink/50">Refreshes automatically every 10s</p>
         </div>
         <div className="flex items-center gap-4">
+          {!soundOn && (
+            <button
+              onClick={() => {
+                enableSound();
+                setSoundOn(true);
+              }}
+              className="rounded-full bg-rose text-white text-xs font-semibold px-4 py-2 hover:bg-rose-dark transition-colors"
+            >
+              🔔 Enable Sound Alerts
+            </button>
+          )}
+          <Link href="/admin/menu" className="text-sm text-ink/50 hover:text-rose underline">
+            Menu
+          </Link>
           <Link href="/admin/billing" className="text-sm text-ink/50 hover:text-rose underline">
             Billing
           </Link>
@@ -153,9 +204,16 @@ function OrderCard({
   updating: boolean;
 }) {
   const next = NEXT_STATUS[order.fulfillment_status];
+  const needsPaymentAtPickup = order.payment_method === "pickup" && order.payment_status !== "paid";
 
   return (
-    <div className="rounded-2xl bg-white shadow-sm p-5">
+    <div className="rounded-2xl bg-white shadow-sm overflow-hidden">
+      {needsPaymentAtPickup && (
+        <div className="bg-amber-400 text-amber-950 text-center text-sm font-bold py-2 tracking-wide">
+          💵 COLLECT PAYMENT AT PICKUP
+        </div>
+      )}
+      <div className="p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-display font-semibold text-maroon">
@@ -229,6 +287,7 @@ function OrderCard({
             </button>
           )}
         </div>
+      </div>
       </div>
     </div>
   );
