@@ -9,6 +9,8 @@ type MonthSummary = {
   itemCount: number;
   orderCount: number;
   amountOwedCents: number;
+  paid: boolean;
+  paidAt: string | null;
 };
 
 type LineItem = { month: string; createdAt: string; name: string; quantity: number };
@@ -16,7 +18,8 @@ type LineItem = { month: string; createdAt: string; name: string; quantity: numb
 type BillingData = {
   perItemFeeCents: number;
   totalItemCount: number;
-  totalAmountOwedCents: number;
+  totalAmountEverOwedCents: number;
+  outstandingAmountCents: number;
   months: MonthSummary[];
   lineItems: LineItem[];
 };
@@ -29,12 +32,29 @@ function formatMonth(month: string) {
 export default function AdminBillingPage() {
   const [data, setData] = useState<BillingData | null>(null);
   const [expandedMonth, setExpandedMonth] = useState<string | null>(null);
+  const [updatingMonth, setUpdatingMonth] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = () => {
     fetch("/api/admin/billing")
       .then((res) => res.json())
       .then(setData);
-  }, []);
+  };
+
+  useEffect(load, []);
+
+  const setPaid = async (month: string, paid: boolean) => {
+    setUpdatingMonth(month);
+    try {
+      await fetch("/api/admin/billing", {
+        method: paid ? "POST" : "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ month }),
+      });
+      load();
+    } finally {
+      setUpdatingMonth(null);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
@@ -56,16 +76,20 @@ export default function AdminBillingPage() {
         <>
           <div className="rounded-2xl bg-maroon text-cream p-6 flex items-center justify-between">
             <div>
-              <p className="text-cream/70 text-sm">Total owed to date</p>
+              <p className="text-cream/70 text-sm">Outstanding balance</p>
               <p className="font-display font-bold text-3xl mt-1">
-                {formatCents(data.totalAmountOwedCents)}
+                {formatCents(data.outstandingAmountCents)}
               </p>
             </div>
             <div className="text-right">
-              <p className="text-cream/70 text-sm">Items sold</p>
+              <p className="text-cream/70 text-sm">Items sold (lifetime)</p>
               <p className="font-display font-bold text-3xl mt-1">{data.totalItemCount}</p>
             </div>
           </div>
+          <p className="text-xs text-ink/40 mt-2 text-center">
+            {formatCents(data.totalAmountEverOwedCents)} earned lifetime · months marked &ldquo;Paid&rdquo; below are
+            excluded from the outstanding balance
+          </p>
 
           {data.months.length === 0 ? (
             <p className="text-center text-ink/50 py-16">
@@ -76,18 +100,27 @@ export default function AdminBillingPage() {
               {data.months.map((m) => {
                 const isOpen = expandedMonth === m.month;
                 return (
-                  <div key={m.month} className="rounded-2xl bg-white shadow-sm overflow-hidden">
+                  <div
+                    key={m.month}
+                    className={`rounded-2xl bg-white shadow-sm overflow-hidden ${m.paid ? "opacity-60" : ""}`}
+                  >
                     <button
                       onClick={() => setExpandedMonth(isOpen ? null : m.month)}
                       className="w-full flex items-center justify-between p-5 text-left"
                     >
                       <div>
-                        <p className="font-display font-semibold text-maroon">
+                        <p className="font-display font-semibold text-maroon flex items-center gap-2">
                           {formatMonth(m.month)}
+                          {m.paid && (
+                            <span className="rounded-full bg-green-100 text-green-700 text-[10px] font-semibold px-2 py-0.5">
+                              PAID
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs text-ink/50">
                           {m.itemCount} item{m.itemCount === 1 ? "" : "s"} · {m.orderCount} order
                           {m.orderCount === 1 ? "" : "s"}
+                          {m.paid && m.paidAt && ` · settled ${new Date(m.paidAt).toLocaleDateString()}`}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
@@ -112,6 +145,23 @@ export default function AdminBillingPage() {
                               </span>
                             </div>
                           ))}
+                        <div className="pt-2 mt-2 border-t border-blush flex justify-end">
+                          <button
+                            onClick={() => setPaid(m.month, !m.paid)}
+                            disabled={updatingMonth === m.month}
+                            className={`rounded-full text-xs font-semibold px-4 py-2 transition-colors disabled:opacity-60 ${
+                              m.paid
+                                ? "border-2 border-maroon text-maroon hover:bg-maroon hover:text-cream"
+                                : "bg-rose hover:bg-rose-dark text-white"
+                            }`}
+                          >
+                            {updatingMonth === m.month
+                              ? "Saving..."
+                              : m.paid
+                                ? "Undo — Mark Unpaid"
+                                : "Mark as Paid"}
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>

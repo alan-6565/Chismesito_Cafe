@@ -103,6 +103,16 @@ begin
     foreign key (menu_item_id) references menu_items(id) on delete set null;
 end $$;
 
+-- Tracks which months of the $1/item fee have actually been paid, so the
+-- billing dashboard can show an outstanding balance instead of a lifetime
+-- total that never resets. amount_cents snapshots what was owed at the time
+-- it was marked paid, so it doesn't shift if it's looked at again later.
+create table if not exists billing_payments (
+  month text primary key,
+  amount_cents integer not null,
+  paid_at timestamptz not null default now()
+);
+
 create index if not exists orders_created_at_idx on orders (created_at desc);
 create index if not exists order_items_order_id_idx on order_items (order_id);
 create index if not exists menu_item_sizes_menu_item_id_idx on menu_item_sizes (menu_item_id);
@@ -118,3 +128,4 @@ alter table modifier_options enable row level security;
 alter table menu_item_modifier_groups enable row level security;
 alter table orders enable row level security;
 alter table order_items enable row level security;
+alter table billing_payments enable row level security;
