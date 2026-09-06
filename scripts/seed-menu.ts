@@ -157,14 +157,15 @@ const REFRESHER_GROUPS = ["refresher_flavor", "refresher_addons"];
 
 const ITEMS: ItemDef[] = [
   // Hot Drinks — Espresso and Flat White have no size; everything else is
-  // 12oz/16oz (confirmed via the Mocha modal)
+  // 12oz/16oz (confirmed via the Mocha modal, and via the real Toast order
+  // page for Espresso/Flat White/Americano/Cappuccino/Hot Chai/Hot Chocolate)
   { slug: "espresso", name: "Espresso", category: "Hot Drinks", basePriceCents: 325 },
-  // Flat White's real price wasn't confirmed anywhere — placeholder, please correct
-  { slug: "flat-white", name: "Flat White", category: "Hot Drinks", basePriceCents: 450 },
+  { slug: "flat-white", name: "Flat White", category: "Hot Drinks", basePriceCents: 575 },
   { slug: "americano", name: "Americano", category: "Hot Drinks", sizes: twoTierSizes(475), groups: HOT_DRINK_GROUPS },
+  { slug: "cappuccino", name: "Cappuccino", category: "Hot Drinks", sizes: twoTierSizes(575), groups: HOT_DRINK_GROUPS },
   { slug: "hot-chai-latte", name: "Hot Chai Latte", category: "Hot Drinks", sizes: twoTierSizes(600), groups: HOT_DRINK_GROUPS },
   { slug: "house-coffee", name: "House Coffee", category: "Hot Drinks", sizes: twoTierSizes(400), groups: HOT_DRINK_GROUPS },
-  { slug: "hot-chocolate", name: "Hot Chocolate", category: "Hot Drinks", sizes: twoTierSizes(600), groups: HOT_DRINK_GROUPS },
+  { slug: "hot-chocolate", name: "Hot Chocolate", category: "Hot Drinks", sizes: twoTierSizes(550), groups: HOT_DRINK_GROUPS },
   { slug: "mocha", name: "Mocha", category: "Hot Drinks", sizes: [{ label: "12 oz", priceCents: 650 }, { label: "16 oz", priceCents: 700 }], groups: HOT_DRINK_GROUPS },
   { slug: "white-mocha", name: "White Mocha", category: "Hot Drinks", sizes: twoTierSizes(650), groups: HOT_DRINK_GROUPS },
 
@@ -229,7 +230,7 @@ const ITEMS: ItemDef[] = [
   // Refreshers and Lemonade
   { slug: "red-bull-refresher", name: "Red Bull Refresher", description: "Energy drink refresher with your choice of flavor and add-ons.", category: "Refreshers and Lemonade", sizes: [{ label: "16 oz", priceCents: 625 }, { label: "20 oz", priceCents: 725 }, { label: "24 oz", priceCents: 825 }], groups: REFRESHER_GROUPS, featured: true },
   { slug: "flavored-lemonade", name: "Flavored Lemonade", description: "Lemonade with your choice of flavor and add-ons.", category: "Refreshers and Lemonade", sizes: stdSizes(575), groups: REFRESHER_GROUPS },
-  { slug: "classic-lemonade", name: "Classic Lemonade", description: "Classic lemonade with no added flavor.", category: "Refreshers and Lemonade", basePriceCents: 500 },
+  { slug: "classic-lemonade", name: "Classic Lemonade", description: "Classic lemonade with no added flavor.", category: "Refreshers and Lemonade", sizes: [{ label: "16 oz", priceCents: 500 }, { label: "20 oz", priceCents: 600 }, { label: "24 oz", priceCents: 700 }], groups: ["refresher_addons"] },
 
   // Fall Menu — standard latte-style modifiers, not the refresher flavor list
   { slug: "pumpkin-spice-iced-latte", name: "Pumpkin Spice Iced Latte", category: "Fall Menu", sizes: stdSizes(700), groups: HOT_DRINK_GROUPS },

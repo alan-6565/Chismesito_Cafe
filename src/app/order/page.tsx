@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { business } from "@/lib/data";
 
 export default function OrderPage() {
   return (
@@ -11,9 +12,14 @@ export default function OrderPage() {
           <span className="text-5xl">🚗</span>
           <h2 className="font-display font-semibold text-xl text-maroon">Delivery</h2>
           <p className="text-sm text-ink/60">Order your favorites for delivery.</p>
-          <button className="mt-2 rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-6 py-3 text-sm transition-colors">
+          <a
+            href={business.doordashUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-6 py-3 text-sm transition-colors"
+          >
             Order on DoorDash
-          </button>
+          </a>
         </div>
         <div className="rounded-3xl bg-white shadow-sm p-8 flex flex-col items-center gap-3">
           <span className="text-5xl">🛍️</span>
