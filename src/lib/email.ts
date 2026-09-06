@@ -6,10 +6,11 @@ import { business } from "./data";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
-// Resend's shared sender works with zero setup for a demo/early launch.
-// Once a domain is verified in Resend, switch this to something like
-// "Chismesito Cafe <orders@chismesitocafe.com>" for better deliverability.
-const FROM_ADDRESS = "Chismesito Cafe <onboarding@resend.dev>";
+// Resend's shared "onboarding@resend.dev" sender only delivers to the email
+// address on the Resend account itself — it cannot reach real customers.
+// Once a domain is verified in Resend, set RESEND_FROM_ADDRESS (e.g.
+// "Chismesito Cafe <orders@chismesitocafe.com>") to start sending for real.
+const FROM_ADDRESS = process.env.RESEND_FROM_ADDRESS || "Chismesito Cafe <onboarding@resend.dev>";
 
 type OrderForEmail = {
   id: string;

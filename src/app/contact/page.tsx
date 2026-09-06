@@ -1,7 +1,9 @@
-import PlaceholderImage from "@/components/PlaceholderImage";
 import { business } from "@/lib/data";
 
 export default function ContactPage() {
+  const mapsQuery = encodeURIComponent(business.address);
+  const telHref = `tel:+1${business.phone.replace(/\D/g, "")}`;
+
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 grid lg:grid-cols-2 gap-10">
       <div>
@@ -14,15 +16,29 @@ export default function ContactPage() {
           <p>🎵 {business.tiktok}</p>
         </div>
         <div className="mt-8 flex flex-wrap gap-3">
-          <button className="rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-6 py-3 text-sm transition-colors">
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${mapsQuery}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-6 py-3 text-sm transition-colors"
+          >
             Get Directions
-          </button>
-          <button className="rounded-full border-2 border-maroon text-maroon font-semibold px-6 py-3 text-sm hover:bg-maroon hover:text-cream transition-colors">
+          </a>
+          <a
+            href={telHref}
+            className="rounded-full border-2 border-maroon text-maroon font-semibold px-6 py-3 text-sm hover:bg-maroon hover:text-cream transition-colors"
+          >
             Call Us
-          </button>
+          </a>
         </div>
       </div>
-      <PlaceholderImage emoji="🗺️" label="Embedded map" className="h-72 lg:h-full rounded-3xl min-h-[280px]" />
+      <iframe
+        title="Map to Chismesito Cafe"
+        src={`https://www.google.com/maps?q=${mapsQuery}&output=embed`}
+        className="h-72 lg:h-full w-full rounded-3xl min-h-[280px] border-0"
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
     </div>
   );
 }

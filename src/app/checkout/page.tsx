@@ -69,7 +69,9 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok || !data.url) throw new Error(data.error || "Something went wrong");
 
-      clear();
+      // Cart stays intact until payment actually succeeds — if the customer
+      // cancels or backs out of Stripe, they land back here with their order
+      // still there instead of having to rebuild it from scratch.
       window.location.href = data.url;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

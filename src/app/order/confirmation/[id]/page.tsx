@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { formatCents } from "@/lib/money";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import ClearCartOnMount from "@/components/ClearCartOnMount";
 
 export default async function OrderConfirmationPage({
   params,
@@ -48,6 +49,7 @@ export default async function OrderConfirmationPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-16 text-center">
+      {paidOnline && <ClearCartOnMount />}
       <span className="text-5xl">🌸</span>
       <h1 className="mt-4 font-display font-bold text-3xl text-maroon">
         Thanks, {order.customer_name}!
