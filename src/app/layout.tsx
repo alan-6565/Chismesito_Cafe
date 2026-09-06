@@ -26,9 +26,27 @@ const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
 });
 
+const title = `${business.name} | ${business.tagline}`;
+
 export const metadata: Metadata = {
-  title: `${business.name} | ${business.tagline}`,
+  metadataBase: new URL("https://chismesitocafe.com"),
+  title,
   description: business.subtitle,
+  openGraph: {
+    title,
+    description: business.subtitle,
+    url: "/",
+    siteName: business.name,
+    images: [{ url: "/images/hero.png", width: 1602, height: 1200, alt: business.tagline }],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description: business.subtitle,
+    images: ["/images/hero.png"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
