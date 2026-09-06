@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { priceCartLines, type CartLine } from "@/lib/pricing";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { notifyStaffOfNewOrder } from "@/lib/sms";
 
 type CartPayload = {
   customerName: string;
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest) {
 
   // Pay-at-pickup orders are confirmed immediately, no payment gate to wait on.
   sendOrderConfirmationEmail(order.id).catch(() => {});
+  notifyStaffOfNewOrder(order.id).catch(() => {});
 
   return NextResponse.json({ orderId: order.id, totalCents: priced.totalCents });
 }

@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { formatCents } from "@/lib/money";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { notifyStaffOfNewOrder } from "@/lib/sms";
 import ClearCartOnMount from "@/components/ClearCartOnMount";
 
 export default async function OrderConfirmationPage({
@@ -37,6 +38,7 @@ export default async function OrderConfirmationPage({
         .eq("id", id);
       order.payment_status = "paid";
       sendOrderConfirmationEmail(id).catch(() => {});
+      notifyStaffOfNewOrder(id).catch(() => {});
     }
   }
 

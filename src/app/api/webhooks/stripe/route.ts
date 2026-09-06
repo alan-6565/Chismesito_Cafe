@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendOrderConfirmationEmail } from "@/lib/email";
+import { notifyStaffOfNewOrder } from "@/lib/sms";
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("stripe-signature");
@@ -38,6 +39,7 @@ export async function POST(req: NextRequest) {
 
     if (order) {
       sendOrderConfirmationEmail(order.id).catch(() => {});
+      notifyStaffOfNewOrder(order.id).catch(() => {});
     }
   }
 
