@@ -23,6 +23,14 @@ export default function AdminMenuPage() {
   const [uploadError, setUploadError] = useState<{ id: string; message: string } | null>(null);
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
 
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newCategory, setNewCategory] = useState(CATEGORY_ORDER[0]);
+  const [newDescription, setNewDescription] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+
   const load = useCallback(() => {
     fetch("/api/admin/menu")
       .then((res) => res.json())
@@ -63,6 +71,44 @@ export default function AdminMenuPage() {
     setUploadingId(null);
   };
 
+  const addDrink = async () => {
+    const priceCents = Math.round(parseFloat(newPrice) * 100);
+    if (!newName.trim()) {
+      setAddError("Please enter a name.");
+      return;
+    }
+    if (!priceCents || priceCents <= 0) {
+      setAddError("Please enter a valid price.");
+      return;
+    }
+
+    setAdding(true);
+    setAddError(null);
+
+    const res = await fetch("/api/admin/menu", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: newName,
+        category: newCategory,
+        description: newDescription,
+        priceCents,
+      }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      setAddError(data.error || "Could not add item");
+    } else {
+      setNewName("");
+      setNewDescription("");
+      setNewPrice("");
+      setShowAddForm(false);
+      load();
+    }
+    setAdding(false);
+  };
+
   const categories = CATEGORY_ORDER.filter((c) => items.some((i) => i.category === c));
 
   return (
@@ -75,6 +121,89 @@ export default function AdminMenuPage() {
         <Link href="/admin/orders" className="text-sm text-ink/50 hover:text-rose underline">
           Orders
         </Link>
+      </div>
+
+      <div className="mb-8">
+        {!showAddForm ? (
+          <button
+            onClick={() => setShowAddForm(true)}
+            className="rounded-full bg-rose hover:bg-rose-dark text-white text-sm font-semibold px-5 py-2.5 transition-colors"
+          >
+            + Add New Drink
+          </button>
+        ) : (
+          <div className="rounded-2xl bg-white shadow-sm p-5 flex flex-col gap-3">
+            <h2 className="font-display font-semibold text-maroon">New Drink</h2>
+            <div>
+              <label className="block text-xs font-medium text-maroon mb-1">Name</label>
+              <input
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+                placeholder="e.g. Pumpkin Spice Latte"
+                className="w-full rounded-xl border border-blush px-3 py-2 text-sm focus:outline-none focus:border-rose"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-maroon mb-1">Category</label>
+              <select
+                value={newCategory}
+                onChange={(e) => setNewCategory(e.target.value)}
+                className="w-full rounded-xl border border-blush px-3 py-2 text-sm focus:outline-none focus:border-rose bg-white"
+              >
+                {CATEGORY_ORDER.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-maroon mb-1">
+                Description <span className="text-ink/40">(optional)</span>
+              </label>
+              <input
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                placeholder="Short description customers will see"
+                className="w-full rounded-xl border border-blush px-3 py-2 text-sm focus:outline-none focus:border-rose"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-maroon mb-1">Price ($)</label>
+              <input
+                value={newPrice}
+                onChange={(e) => setNewPrice(e.target.value)}
+                placeholder="6.00"
+                inputMode="decimal"
+                className="w-full rounded-xl border border-blush px-3 py-2 text-sm focus:outline-none focus:border-rose"
+              />
+            </div>
+            {addError && <p className="text-xs text-red-600">{addError}</p>}
+            <div className="flex gap-2 mt-1">
+              <button
+                onClick={addDrink}
+                disabled={adding}
+                className="rounded-full bg-rose hover:bg-rose-dark disabled:opacity-60 text-white text-sm font-semibold px-5 py-2.5 transition-colors"
+              >
+                {adding ? "Adding..." : "Add Drink"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowAddForm(false);
+                  setAddError(null);
+                }}
+                disabled={adding}
+                className="rounded-full border-2 border-maroon text-maroon text-sm font-semibold px-5 py-2.5 hover:bg-maroon hover:text-cream disabled:opacity-60 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+            <p className="text-[11px] text-ink/40">
+              New drinks are added at one flat price with no size options — for sizes or
+              add-ons, ask your developer.
+            </p>
+          </div>
+        )}
       </div>
 
       {loading ? (
