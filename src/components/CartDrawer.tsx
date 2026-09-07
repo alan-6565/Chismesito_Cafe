@@ -39,6 +39,9 @@ export default function CartDrawer() {
                   {summarizeCartLine(item) && (
                     <p className="text-[11px] text-ink/50 truncate">{summarizeCartLine(item)}</p>
                   )}
+                  {item.notes && (
+                    <p className="text-[11px] text-ink/50 italic truncate">Note: {item.notes}</p>
+                  )}
                   <p className="text-xs text-ink/60">{formatCents(item.unitPriceCents)} each</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">

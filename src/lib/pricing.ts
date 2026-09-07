@@ -6,6 +6,7 @@ export type CartLine = {
   sizeId?: string;
   optionIds: string[];
   quantity: number;
+  notes?: string;
 };
 
 export type PricedOrderItem = {
@@ -15,6 +16,7 @@ export type PricedOrderItem = {
   quantity: number;
   size_label: string | null;
   modifiers: { group: string; option: string; priceCents: number }[];
+  notes: string | null;
 };
 
 export type PricingResult =
@@ -119,6 +121,7 @@ export async function priceCartLines(items: CartLine[]): Promise<PricingResult> 
       quantity: line.quantity,
       size_label: sizeLabel,
       modifiers,
+      notes: line.notes?.trim().slice(0, 200) || null,
     });
   }
 

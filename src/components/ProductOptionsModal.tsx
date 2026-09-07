@@ -18,6 +18,7 @@ export default function ProductOptionsModal({
   const [sizeId, setSizeId] = useState<string | undefined>(item.sizes[0]?.id);
   const [selections, setSelections] = useState<Record<string, Set<string>>>({});
   const [quantity, setQuantity] = useState(1);
+  const [notes, setNotes] = useState("");
 
   const selectedSize = item.sizes.find((s) => s.id === sizeId);
 
@@ -84,6 +85,7 @@ export default function ProductOptionsModal({
         modifiers,
         unitPriceCents,
         image: item.imageUrl ?? undefined,
+        notes: notes.trim() || undefined,
       },
       quantity
     );
@@ -189,6 +191,20 @@ export default function ProductOptionsModal({
               </div>
             </div>
           ))}
+
+          <div>
+            <h3 className="font-semibold text-maroon text-sm mb-2">
+              Notes <span className="text-ink/40 font-normal">(optional)</span>
+            </h3>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="e.g. extra hot, no ice, allergic to nuts..."
+              rows={2}
+              maxLength={200}
+              className="w-full rounded-xl border border-blush px-3 py-2 text-sm focus:outline-none focus:border-rose resize-none"
+            />
+          </div>
 
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-maroon text-sm">Quantity</h3>

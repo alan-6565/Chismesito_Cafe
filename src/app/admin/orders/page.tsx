@@ -12,6 +12,7 @@ type OrderItem = {
   quantity: number;
   size_label: string | null;
   modifiers: { group: string; option: string; priceCents: number }[];
+  notes: string | null;
 };
 
 type Order = {
@@ -272,6 +273,9 @@ function OrderCard({
               <span className="text-ink/80">
                 {item.quantity}&times; {item.name_snapshot}
                 {summary && <span className="block text-[11px] text-ink/50">{summary}</span>}
+                {item.notes && (
+                  <span className="block text-[11px] text-rose font-semibold">📝 {item.notes}</span>
+                )}
               </span>
               <span className="text-maroon font-medium shrink-0">
                 {formatCents(item.price_cents_snapshot * item.quantity)}

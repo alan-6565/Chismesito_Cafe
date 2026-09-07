@@ -44,7 +44,7 @@ export default async function OrderConfirmationPage({
 
   const { data: items } = await supabaseAdmin
     .from("order_items")
-    .select("name_snapshot, price_cents_snapshot, quantity, size_label, modifiers")
+    .select("name_snapshot, price_cents_snapshot, quantity, size_label, modifiers, notes")
     .eq("order_id", id);
 
   const paidOnline = order.payment_method === "online" && order.payment_status === "paid";
@@ -74,6 +74,7 @@ export default async function OrderConfirmationPage({
               <span className="text-ink/80">
                 {item.quantity}&times; {item.name_snapshot}
                 {summary && <span className="block text-[11px] text-ink/50">{summary}</span>}
+                {item.notes && <span className="block text-[11px] text-ink/50 italic">Note: {item.notes}</span>}
               </span>
               <span className="text-maroon font-medium shrink-0">
                 {formatCents(item.price_cents_snapshot * item.quantity)}

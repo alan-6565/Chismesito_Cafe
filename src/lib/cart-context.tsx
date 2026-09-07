@@ -20,6 +20,7 @@ export type CartItem = {
   unitPriceCents: number;
   image?: string;
   quantity: number;
+  notes?: string;
 };
 
 type NewCartLine = Omit<CartItem, "cartLineId" | "quantity">;
@@ -41,14 +42,16 @@ const CartContext = createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "chismesito-cart";
 
-// Same menu item + same size + same modifier selections should merge into
-// one line (just bump quantity) instead of creating a duplicate row.
+// Same menu item + same size + same modifier selections + same note should
+// merge into one line (just bump quantity) instead of creating a duplicate
+// row. A different note (e.g. "extra hot" vs "no ice") keeps lines separate
+// since they're no longer really the same request.
 function lineKey(item: NewCartLine): string {
   const mods = [...item.modifiers]
     .map((m) => `${m.group}:${m.option}`)
     .sort()
     .join("|");
-  return `${item.menuItemId}::${item.sizeLabel ?? ""}::${mods}`;
+  return `${item.menuItemId}::${item.sizeLabel ?? ""}::${mods}::${item.notes ?? ""}`;
 }
 
 export function CartProvider({ children }: { children: ReactNode }) {

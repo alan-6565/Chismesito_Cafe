@@ -15,7 +15,7 @@ export async function GET() {
   const { data: items, error: itemsError } = orders.length
     ? await supabaseAdmin
         .from("order_items")
-        .select("order_id, name_snapshot, price_cents_snapshot, quantity, size_label, modifiers")
+        .select("order_id, name_snapshot, price_cents_snapshot, quantity, size_label, modifiers, notes")
         .in("order_id", orders.map((o) => o.id))
     : { data: [], error: null };
 

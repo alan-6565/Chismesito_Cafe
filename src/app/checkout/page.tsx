@@ -24,6 +24,7 @@ export default function CheckoutPage() {
       sizeId: i.sizeId,
       optionIds: i.modifiers.map((m) => m.optionId),
       quantity: i.quantity,
+      notes: i.notes,
     })),
   });
 

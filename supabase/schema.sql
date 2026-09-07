@@ -86,6 +86,7 @@ create table if not exists order_items (
 
 alter table order_items add column if not exists size_label text;
 alter table order_items add column if not exists modifiers jsonb not null default '[]'::jsonb;
+alter table order_items add column if not exists notes text;
 
 -- menu_item_id originally had the default NO ACTION on delete, which would
 -- block deleting a discontinued menu item if any historical order referenced
