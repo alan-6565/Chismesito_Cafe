@@ -14,7 +14,9 @@ export const gallery = [
 ];
 
 export const promotion = {
-  active: true,
+  // Not yet confirmed with the client — flip to true once a real promo is
+  // agreed on. Homepage banner is hidden entirely while false.
+  active: false,
   title: "Free Coffee for a Week 🎉",
   description: "We're almost at 3,000 followers on Instagram! Enter for a chance to win.",
   cta: "Enter Giveaway",
