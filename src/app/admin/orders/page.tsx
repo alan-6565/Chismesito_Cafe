@@ -23,6 +23,7 @@ type Order = {
   payment_status: "pending" | "paid" | "unpaid";
   fulfillment_status: "pending" | "preparing" | "ready" | "completed" | "cancelled";
   total_cents: number;
+  staff_notes: string | null;
   items: OrderItem[];
 };
 
@@ -206,6 +207,21 @@ function OrderCard({
   const next = NEXT_STATUS[order.fulfillment_status];
   const needsPaymentAtPickup = order.payment_method === "pickup" && order.payment_status !== "paid";
 
+  const [notes, setNotes] = useState(order.staff_notes ?? "");
+  const [savedNotes, setSavedNotes] = useState(order.staff_notes ?? "");
+  const [savingNotes, setSavingNotes] = useState(false);
+
+  const saveNotes = async () => {
+    setSavingNotes(true);
+    await fetch(`/api/admin/orders/${order.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ staffNotes: notes }),
+    });
+    setSavedNotes(notes);
+    setSavingNotes(false);
+  };
+
   return (
     <div className="rounded-2xl bg-white shadow-sm overflow-hidden">
       {needsPaymentAtPickup && (
@@ -263,6 +279,26 @@ function OrderCard({
             </div>
           );
         })}
+      </div>
+
+      <div className="mt-4 border-t border-blush pt-4">
+        <label className="text-xs font-semibold text-ink/50 uppercase tracking-wide">Notes</label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="e.g. no whip, customer running late..."
+          rows={2}
+          className="mt-1 w-full rounded-xl border border-blush px-3 py-2 text-sm focus:outline-none focus:border-rose resize-none"
+        />
+        {notes !== savedNotes && (
+          <button
+            onClick={saveNotes}
+            disabled={savingNotes}
+            className="mt-2 rounded-full bg-rose hover:bg-rose-dark disabled:opacity-60 text-white text-xs font-semibold px-4 py-2 transition-colors"
+          >
+            {savingNotes ? "Saving..." : "Save Note"}
+          </button>
+        )}
       </div>
 
       <div className="mt-4 flex items-center justify-between border-t border-blush pt-4">
