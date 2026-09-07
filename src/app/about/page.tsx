@@ -35,7 +35,15 @@ export default function AboutPage() {
             className="object-cover"
           />
         </div>
-        <PlaceholderImage emoji="💕" label="Community" className="h-40 rounded-2xl" />
+        <div className="relative h-40 rounded-2xl overflow-hidden">
+          <Image
+            src="/images/community.png"
+            alt="Friends toasting Chismesito Cafe iced drinks"
+            fill
+            sizes="(min-width: 1024px) 25vw, 45vw"
+            className="object-cover"
+          />
+        </div>
       </div>
     </div>
   );
