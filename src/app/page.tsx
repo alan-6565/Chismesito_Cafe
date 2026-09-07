@@ -1,8 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
+import PromoCarousel from "@/components/PromoCarousel";
 import { CupIcon, LeafIcon, HeartIcon, PinIcon } from "@/components/icons";
-import { promotion, business } from "@/lib/data";
+import { promotion, promoSlides, business } from "@/lib/data";
 import { getMenu } from "@/lib/menu";
 
 export const revalidate = 0;
@@ -63,20 +64,9 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* Seasonal banner */}
+      {/* Promo carousel */}
       <section id="seasonal" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-        <Link
-          href="/menu"
-          className="block relative w-full aspect-[2484/1032] rounded-3xl overflow-hidden"
-        >
-          <Image
-            src="/images/seasonal-banner.png"
-            alt="Chismesito Cafe spring seasonal drinks — Pistachio Matcha Latte and Strawberry Crunch Latte"
-            fill
-            sizes="100vw"
-            className="object-cover"
-          />
-        </Link>
+        <PromoCarousel slides={promoSlides} />
       </section>
 
       {/* Features */}

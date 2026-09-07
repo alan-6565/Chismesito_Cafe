@@ -21,6 +21,20 @@ export const promotion = {
   cta: "Enter Giveaway",
 };
 
+export type PromoSlide = { id: string; image: string; alt: string; href?: string };
+
+// Auto-rotating banner on the homepage. Add more slides here as real promo
+// photos come in — each one should match a 2484x1032 (~2.4:1) aspect ratio
+// to match the existing seasonal banner and avoid awkward cropping.
+export const promoSlides: PromoSlide[] = [
+  {
+    id: "spring-seasonal",
+    image: "/images/seasonal-banner.png",
+    alt: "Chismesito Cafe spring seasonal drinks — Pistachio Matcha Latte and Strawberry Crunch Latte",
+    href: "/menu",
+  },
+];
+
 const streetAddress = "1723 Barrett Ave";
 const city = "Richmond";
 const state = "CA";
