@@ -132,6 +132,7 @@ export default function AdminOrdersPage() {
             <button
               onClick={() => {
                 enableSound();
+                playChime();
                 setSoundOn(true);
               }}
               className="rounded-full bg-rose text-white text-xs font-semibold px-4 py-2 hover:bg-rose-dark transition-colors"
