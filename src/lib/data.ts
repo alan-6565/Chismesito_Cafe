@@ -53,9 +53,6 @@ export const business = {
   phone: "(510) 691-3583",
   instagram: "@chismesito__cafe",
   instagramUrl: "https://www.instagram.com/chismesito__cafe",
-  tiktok: "@chismesitocafe",
-  tiktokUrl: "https://www.tiktok.com/@chismesitocafe",
-  facebook: "Chismesito Cafe",
   doordashUrl:
     "https://www.doordash.com/en/store/chismesito-cafe-richmond-46863232/112528855/?srsltid=AfmBOooTrX8BaXsk3e0zcuyZtOBN34yoTL3niaIafowiZoebURYRvVMk",
   story:

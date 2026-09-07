@@ -1,4 +1,4 @@
-import { InstagramIcon, TikTokIcon, FacebookIcon } from "./icons";
+import { InstagramIcon } from "./icons";
 import { business } from "@/lib/data";
 
 export default function SocialLinks({ className = "" }: { className?: string }) {
@@ -13,19 +13,6 @@ export default function SocialLinks({ className = "" }: { className?: string }) 
       >
         <InstagramIcon />
       </a>
-      <a
-        href={business.tiktokUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        title="TikTok"
-        className="hover:opacity-70 transition-opacity"
-      >
-        <TikTokIcon />
-      </a>
-      {/* No confirmed Facebook page URL yet — decorative until the client provides one. */}
-      <span title="Facebook" className="opacity-60">
-        <FacebookIcon />
-      </span>
     </div>
   );
 }

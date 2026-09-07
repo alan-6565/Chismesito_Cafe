@@ -10,34 +10,6 @@ export function InstagramIcon({ className = "w-5 h-5" }: IconProps) {
   );
 }
 
-export function TikTokIcon({ className = "w-5 h-5" }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <path
-        d="M14 3v10.5a3 3 0 1 1-2.2-2.9M14 3c.4 2.2 2 3.9 4.2 4.2"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-export function FacebookIcon({ className = "w-5 h-5" }: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" className={className}>
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.7" />
-      <path
-        d="M13.6 21v-6.8h2.1l.3-2.6h-2.4V9.9c0-.75.2-1.26 1.28-1.26h1.37V6.32c-.24-.03-1.05-.1-2-.1-1.98 0-3.33 1.2-3.33 3.42v1.9H8.7v2.6h2.2V21"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 export function CupIcon({ className = "w-7 h-7" }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" fill="none" className={className}>

@@ -17,7 +17,6 @@ export default function ContactPage() {
           <p>🕐 {business.hours}</p>
           <p>📞 {business.phone}</p>
           <p>📱 {business.instagram}</p>
-          <p>🎵 {business.tiktok}</p>
         </div>
         <div className="mt-8 flex flex-wrap gap-3">
           <a

@@ -125,30 +125,14 @@ export default async function Home() {
             </Link>
           </div>
 
-          {/* Invisible hotspots aligned exactly over the baked-in social icons — visible tint on hover so the hit target is discoverable */}
+          {/* Invisible hotspot aligned over the baked-in Instagram icon — visible tint on hover so the hit target is discoverable. The banner graphic also has TikTok/Facebook icons baked in with no link behind them anymore; removing them visually needs a new banner image. */}
           <a
-            href={`https://instagram.com/${business.instagram.replace("@", "")}`}
+            href={business.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Instagram"
             className="absolute rounded-full hover:bg-white/25 transition-colors"
             style={{ left: "62%", top: "82%", width: "4.5%", height: "12%" }}
-          />
-          <a
-            href={`https://tiktok.com/${business.tiktok.replace("@", "@")}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="TikTok"
-            className="absolute rounded-full hover:bg-white/25 transition-colors"
-            style={{ left: "66.9%", top: "82%", width: "4.5%", height: "12%" }}
-          />
-          <a
-            href="https://facebook.com/chismesitocafe"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Facebook"
-            className="absolute rounded-full hover:bg-white/25 transition-colors"
-            style={{ left: "71.4%", top: "82%", width: "4.5%", height: "12%" }}
           />
         </div>
       </section>

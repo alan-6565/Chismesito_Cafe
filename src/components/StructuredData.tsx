@@ -29,7 +29,7 @@ export default function StructuredData() {
       opens,
       closes,
     })),
-    sameAs: [business.instagramUrl, business.tiktokUrl],
+    sameAs: [business.instagramUrl],
   };
 
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />;
