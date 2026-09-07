@@ -113,28 +113,28 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
 }
 
 /**
- * Sends a "your order is complete" email once staff marks an order
- * completed in /admin/orders. Guarded by completion_email_sent_at the same
- * way the confirmation email is, so re-toggling the status can't re-send it.
+ * Sends a "your order is ready" email once staff marks an order ready for
+ * pickup in /admin/orders. Guarded by ready_email_sent_at the same way the
+ * confirmation email is, so re-toggling the status can't re-send it.
  */
-export async function sendOrderCompleteEmail(orderId: string): Promise<void> {
+export async function sendOrderReadyEmail(orderId: string): Promise<void> {
   if (!resend) return;
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, customer_name, customer_email, completion_email_sent_at")
+    .select("id, customer_name, customer_email, ready_email_sent_at")
     .eq("id", orderId)
     .single();
 
-  if (!order || !order.customer_email || order.completion_email_sent_at) return;
+  if (!order || !order.customer_email || order.ready_email_sent_at) return;
 
   const html = `
     <div style="background:#fdf6ef;padding:32px 16px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
       <div style="max-width:480px;margin:0 auto;text-align:center;">
         <p style="font-size:32px;margin:0 0 8px;">☕</p>
-        <h1 style="color:#451820;font-size:24px;margin:0 0 8px;">Your order is complete!</h1>
+        <h1 style="color:#451820;font-size:24px;margin:0 0 8px;">Your order is ready!</h1>
         <p style="color:#6b4a50;font-size:14px;margin:0 0 4px;">
-          Thanks for stopping by, ${order.customer_name} — we hope you enjoyed it!
+          Come on in, ${order.customer_name} — it's ready and waiting for you at the counter.
         </p>
         <p style="color:#a08890;font-size:11px;font-family:ui-monospace,monospace;margin:16px 0 0;">Order #${order.id.slice(0, 8)}</p>
         <p style="color:#a08890;font-size:12px;margin:24px 0 0;">
@@ -146,14 +146,14 @@ export async function sendOrderCompleteEmail(orderId: string): Promise<void> {
   const { error } = await resend.emails.send({
     from: FROM_ADDRESS,
     to: order.customer_email,
-    subject: `Your order is complete — ${business.name}`,
+    subject: `Your order is ready — ${business.name}`,
     html,
   });
 
   if (!error) {
     await supabaseAdmin
       .from("orders")
-      .update({ completion_email_sent_at: new Date().toISOString() })
+      .update({ ready_email_sent_at: new Date().toISOString() })
       .eq("id", orderId);
   }
 }

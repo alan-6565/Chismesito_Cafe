@@ -72,7 +72,10 @@ create table if not exists orders (
 
 alter table orders add column if not exists customer_email text;
 alter table orders add column if not exists confirmation_email_sent_at timestamptz;
-alter table orders add column if not exists completion_email_sent_at timestamptz;
+alter table orders add column if not exists ready_email_sent_at timestamptz;
+-- Superseded by ready_email_sent_at above (the "ready" email replaced the
+-- "complete" email this was tracking) before it ever saw real use.
+alter table orders drop column if exists completion_email_sent_at;
 alter table orders add column if not exists staff_notified_at timestamptz;
 alter table orders add column if not exists staff_notes text;
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { sendOrderCompleteEmail } from "@/lib/email";
+import { sendOrderReadyEmail } from "@/lib/email";
 
 const VALID_STATUSES = ["pending", "preparing", "ready", "completed", "cancelled"];
 
@@ -34,8 +34,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: "Could not update order" }, { status: 500 });
   }
 
-  if (update.fulfillment_status === "completed") {
-    sendOrderCompleteEmail(id).catch(() => {});
+  if (update.fulfillment_status === "ready") {
+    sendOrderReadyEmail(id).catch(() => {});
   }
 
   return NextResponse.json({ ok: true });
