@@ -321,9 +321,9 @@ async function main() {
         featured: item.featured ?? false,
         has_sizes: !!item.sizes,
         base_price_cents: item.sizes ? 0 : item.basePriceCents,
-        // No real product photos yet for the real menu — reuse the same mock
-        // photo on featured items only, same placeholder approach as before.
-        image_url: item.featured ? "/images/trending-mock.jpeg" : null,
+        // No real product photos yet — items show name-only until a real
+        // photo is uploaded via /admin/menu.
+        image_url: null,
       })
       .select("id")
       .single();

@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import PlaceholderImage from "./PlaceholderImage";
 import { useCart } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
 import type { MenuItemFull } from "@/lib/menu";
@@ -95,23 +94,22 @@ export default function ProductOptionsModal({
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
       <button aria-label="Close" onClick={onClose} className="absolute inset-0 bg-ink/40" />
       <div className="relative w-full sm:max-w-lg max-h-[90vh] bg-cream rounded-t-3xl sm:rounded-3xl shadow-xl overflow-hidden flex flex-col">
-        <div className="relative h-40 shrink-0">
-          {item.imageUrl ? (
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-cream/90 text-maroon flex items-center justify-center text-lg"
+        >
+          &times;
+        </button>
+
+        {item.imageUrl && (
+          <div className="relative h-40 shrink-0">
             <Image src={item.imageUrl} alt={item.name} fill sizes="600px" className="object-cover" />
-          ) : (
-            <PlaceholderImage emoji="🥤" className="h-full w-full" />
-          )}
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-cream/90 text-maroon flex items-center justify-center text-lg"
-          >
-            &times;
-          </button>
-        </div>
+          </div>
+        )}
 
         <div className="overflow-y-auto px-5 py-4 flex flex-col gap-5">
-          <div>
+          <div className={item.imageUrl ? undefined : "pr-10"}>
             <h2 className="font-display font-bold text-xl text-maroon">{item.name}</h2>
             {item.description && <p className="text-sm text-ink/60 mt-1">{item.description}</p>}
           </div>

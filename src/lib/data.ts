@@ -5,7 +5,6 @@
 export const gallery = [
   { id: 1, emoji: "☕", label: "Iced Coffee" },
   { id: 2, emoji: "💚", label: "Matcha" },
-  { id: 3, emoji: "🍓", label: "Dubai Strawberry" },
   { id: 4, emoji: "🥐", label: "Bakery" },
   { id: 5, emoji: "🏪", label: "Storefront" },
   { id: 6, emoji: "🌸", label: "Spring Menu" },
