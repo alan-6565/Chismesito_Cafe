@@ -11,7 +11,7 @@ function toMinutes(hhmm: string): number {
   return h * 60 + m;
 }
 
-export function isOpenNow(date: Date = new Date()): boolean {
+function pacificNow(date: Date): { day: number; minutes: number } {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: TIMEZONE,
     weekday: "short",
@@ -21,10 +21,30 @@ export function isOpenNow(date: Date = new Date()): boolean {
   }).formatToParts(date);
 
   const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
-  const day = DAY_INDEX[get("weekday")];
-  const minutes = Number(get("hour")) * 60 + Number(get("minute"));
+  return { day: DAY_INDEX[get("weekday")], minutes: Number(get("hour")) * 60 + Number(get("minute")) };
+}
 
+export function isOpenNow(date: Date = new Date()): boolean {
+  const { day, minutes } = pacificNow(date);
   return openingHours.some(
     ({ days, opens, closes }) => days.includes(day) && minutes >= toMinutes(opens) && minutes < toMinutes(closes)
   );
+}
+
+function formatTime(hhmm: string): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  const period = h >= 12 ? "PM" : "AM";
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return m === 0 ? `${hour12}:00 ${period}` : `${hour12}:${String(m).padStart(2, "0")} ${period}`;
+}
+
+/** "Open Now · Closes at 7:00 PM" or "Closed · Opens at 7:00 AM" */
+export function getTodayScheduleLabel(date: Date = new Date()): string {
+  const { day, minutes } = pacificNow(date);
+  const today = openingHours.find((s) => s.days.includes(day));
+  if (!today) return "Closed today";
+
+  return minutes >= toMinutes(today.opens) && minutes < toMinutes(today.closes)
+    ? `Open Now · Closes at ${formatTime(today.closes)}`
+    : `Closed · Opens at ${formatTime(today.opens)}`;
 }
