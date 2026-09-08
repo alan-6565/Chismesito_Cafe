@@ -4,12 +4,12 @@
 
 export const gallery = [
   { id: 1, emoji: "☕", label: "Iced Coffee" },
-  { id: 2, emoji: "💚", label: "Matcha" },
+  { id: 2, emoji: "💚", label: "Matcha", image: "/images/gallery-matcha.png" },
   { id: 4, emoji: "🥐", label: "Bakery", image: "/images/bakery.png" },
   { id: 5, emoji: "🏪", label: "Storefront", image: "/images/storefront.png" },
   { id: 6, emoji: "🌸", label: "Spring Menu" },
   { id: 7, emoji: "📸", label: "Customers", image: "/images/community.png" },
-  { id: 8, emoji: "🍰", label: "Dessert Cups" },
+  { id: 8, emoji: "🍰", label: "Dessert Cups", image: "/images/gallery-cookies.png" },
 ];
 
 export const promotion = {
