@@ -19,6 +19,7 @@ export default function AdminMenuPage() {
   const [items, setItems] = useState<AdminMenuItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const [uploadingId, setUploadingId] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<{ id: string; message: string } | null>(null);
   const fileInputs = useRef<Record<string, HTMLInputElement | null>>({});
@@ -51,6 +52,17 @@ export default function AdminMenuPage() {
       body: JSON.stringify({ available: !item.available }),
     });
     setSavingId(null);
+  };
+
+  const removeItem = async (item: AdminMenuItem) => {
+    if (!window.confirm(`Remove "${item.name}" from the menu? This can't be undone.`)) return;
+
+    setRemovingId(item.id);
+    const res = await fetch(`/api/admin/menu/${item.id}`, { method: "DELETE" });
+    if (res.ok) {
+      setItems((prev) => prev.filter((i) => i.id !== item.id));
+    }
+    setRemovingId(null);
   };
 
   const uploadPhoto = async (item: AdminMenuItem, file: File) => {
@@ -267,6 +279,16 @@ export default function AdminMenuPage() {
                           }`}
                         >
                           {item.available ? "Available" : "Sold Out"}
+                        </button>
+
+                        <button
+                          onClick={() => removeItem(item)}
+                          disabled={removingId === item.id}
+                          aria-label={`Remove ${item.name}`}
+                          title="Remove from menu"
+                          className="rounded-full w-8 h-8 shrink-0 flex items-center justify-center text-ink/40 hover:bg-red-50 hover:text-red-600 disabled:opacity-60 transition-colors text-lg leading-none"
+                        >
+                          {removingId === item.id ? "…" : "−"}
                         </button>
                       </div>
                     </div>
