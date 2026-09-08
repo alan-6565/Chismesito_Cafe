@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import PromoCarousel from "@/components/PromoCarousel";
-import { CupIcon, LeafIcon, HeartIcon, PinIcon } from "@/components/icons";
+import { CupIcon, LeafIcon, HeartIcon, PinIcon, InstagramIcon } from "@/components/icons";
 import { promotion, promoSlides, business } from "@/lib/data";
 import { getMenu } from "@/lib/menu";
 
@@ -95,45 +95,43 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Visit us strip */}
+      {/* Visit us strip — real, live data (address/hours), not baked into a
+          graphic, so it can't go stale and reflows properly on mobile. */}
       <section id="visit" className="pb-12">
-        <div className="relative w-full aspect-[2234/788] overflow-hidden">
-          <Image
-            src="/images/visit-banner.png"
-            alt={`Visit Chismesito Cafe — ${business.address}. ${business.hours}`}
-            fill
-            sizes="100vw"
-            className="object-cover"
-          />
-
-          {/* Real CTA buttons, overlaid in the blank space below the baked-in hours text */}
-          <div
-            className="absolute flex flex-wrap gap-2 sm:gap-3"
-            style={{ left: "53%", top: "64%" }}
-          >
-            <Link
-              href="/contact"
-              className="rounded-full bg-rose hover:bg-rose-dark text-white text-[10px] sm:text-sm font-semibold px-2.5 sm:px-5 py-1.5 sm:py-2.5 shadow transition-colors"
-            >
-              Get Directions
-            </Link>
-            <Link
-              href="/gallery"
-              className="rounded-full border-2 border-maroon bg-cream/80 text-maroon text-[10px] sm:text-sm font-semibold px-2.5 sm:px-5 py-1.5 sm:py-2.5 shadow hover:bg-maroon hover:text-cream transition-colors"
-            >
-              Follow Us
-            </Link>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid sm:grid-cols-2 rounded-3xl overflow-hidden shadow-sm">
+            <div className="relative h-56 sm:h-auto">
+              <Image
+                src="/images/storefront.png"
+                alt="Chismesito Cafe storefront in Richmond, CA"
+                fill
+                sizes="(min-width: 640px) 50vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+            <div className="bg-blush p-8 sm:p-10 flex flex-col justify-center gap-4">
+              <h2 className="font-display font-bold text-2xl text-maroon">Visit Us in Richmond, CA</h2>
+              <p className="text-ink/80">{business.address}</p>
+              <p className="text-ink/80">{business.hours}</p>
+              <div className="flex flex-wrap items-center gap-3 mt-2">
+                <Link
+                  href="/contact"
+                  className="rounded-full bg-rose hover:bg-rose-dark text-white text-sm font-semibold px-5 py-2.5 transition-colors"
+                >
+                  Get Directions
+                </Link>
+                <a
+                  href={business.instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full border-2 border-maroon text-maroon p-2.5 hover:bg-maroon hover:text-cream transition-colors"
+                  aria-label="Follow us on Instagram"
+                >
+                  <InstagramIcon className="w-5 h-5" />
+                </a>
+              </div>
+            </div>
           </div>
-
-          {/* Invisible hotspot aligned over the baked-in Instagram icon — visible tint on hover so the hit target is discoverable. The banner graphic also has TikTok/Facebook icons baked in with no link behind them anymore; removing them visually needs a new banner image. */}
-          <a
-            href={business.instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-            className="absolute rounded-full hover:bg-white/25 transition-colors"
-            style={{ left: "62%", top: "82%", width: "4.5%", height: "12%" }}
-          />
         </div>
       </section>
     </div>

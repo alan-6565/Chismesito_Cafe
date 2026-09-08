@@ -18,18 +18,19 @@ export default function ContactPage() {
 
   return (
     <div>
-      {/* Floral background already has "Visit Chismesito" baked in as the
-          page's own hero text, so there's no separate visible heading here —
-          just an sr-only one for accessibility/SEO. Scoped tightly to this
-          block (not the whole page) and padded so the grid below clears the
-          image's own text before it starts. */}
+      {/* Floral background has "Visit Chismesito" baked in as hero text on
+          wide screens, but a narrow phone viewport crops most of that away
+          (bg-cover on a very different aspect ratio) — so the heading is
+          visible for real below lg, and only hidden (sr-only, letting the
+          image's own text carry it) once the image is wide enough to show
+          its full design. */}
       <div className="bg-blush/40 bg-cover bg-top" style={{ backgroundImage: "url(/images/contact-background.png)" }}>
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-48 sm:pt-56 pb-12">
-          <h1 className="sr-only">Visit Chismesito — Great coffee, good company, always.</h1>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 lg:pt-56 pb-12">
+          <h1 className="font-display font-bold text-3xl text-maroon mb-8 lg:sr-only">Visit Chismesito</h1>
 
           <div className="grid lg:grid-cols-[1fr_1fr_1fr] gap-6 items-start">
             {/* Info card */}
-            <div className="rounded-3xl bg-cream/95 shadow-sm p-6 flex flex-col gap-5">
+            <div className="order-2 lg:order-1 rounded-3xl bg-cream/95 shadow-sm p-6 flex flex-col gap-5">
               <div className="flex gap-3">
                 <PinIcon className="w-6 h-6 text-maroon shrink-0 mt-0.5" />
                 <div>
@@ -85,7 +86,7 @@ export default function ContactPage() {
             </div>
 
             {/* Storefront photo */}
-            <div className="relative rounded-3xl overflow-hidden shadow-sm min-h-[280px] lg:h-full">
+            <div className="order-1 lg:order-2 relative rounded-3xl overflow-hidden shadow-sm min-h-[280px] lg:h-full">
               <Image
                 src="/images/contact-storefront.png"
                 alt="Chismesito Cafe storefront in Richmond, CA"
@@ -96,7 +97,7 @@ export default function ContactPage() {
             </div>
 
             {/* Live map */}
-            <div className="relative rounded-3xl overflow-hidden shadow-sm min-h-[280px] lg:h-full">
+            <div className="order-3 relative rounded-3xl overflow-hidden shadow-sm min-h-[280px] lg:h-full">
               <iframe
                 title="Map to Chismesito Cafe"
                 src={`https://www.google.com/maps?q=${mapsQuery}&output=embed`}
