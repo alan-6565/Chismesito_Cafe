@@ -54,6 +54,16 @@ const MODIFIER_GROUPS: ModifierGroupDef[] = [
     ],
   },
   {
+    key: "caffeine",
+    label: "Caffeine",
+    selectionType: "single",
+    required: false,
+    options: [
+      { label: "Regular", priceCents: 0 },
+      { label: "Decaf", priceCents: 0 },
+    ],
+  },
+  {
     key: "coffee_addons",
     label: "Coffee Add-Ons",
     selectionType: "multi",
@@ -151,7 +161,11 @@ const twoTierSizes = (base12: number): Size[] => [
 ];
 
 const HOT_DRINK_GROUPS = ["milk_options", "coffee_addons"];
-const CLASSIC_LATTE_GROUPS = ["milk_options", "hot_or_iced", "coffee_addons"];
+// Same as HOT_DRINK_GROUPS but for actual coffee drinks (adds the
+// Regular/Decaf choice) — chai, hot chocolate, and matcha use HOT_DRINK_GROUPS
+// plain since decaf doesn't apply to them.
+const COFFEE_DRINK_GROUPS = ["milk_options", "coffee_addons", "caffeine"];
+const CLASSIC_LATTE_GROUPS = ["milk_options", "hot_or_iced", "coffee_addons", "caffeine"];
 const MATCHA_GROUPS = ["milk_options", "coffee_addons"];
 const REFRESHER_GROUPS = ["refresher_flavor", "refresher_addons"];
 
@@ -159,15 +173,15 @@ const ITEMS: ItemDef[] = [
   // Hot Drinks — Espresso and Flat White have no size; everything else is
   // 12oz/16oz (confirmed via the Mocha modal, and via the real Toast order
   // page for Espresso/Flat White/Americano/Cappuccino/Hot Chai/Hot Chocolate)
-  { slug: "espresso", name: "Espresso", category: "Hot Drinks", basePriceCents: 325 },
-  { slug: "flat-white", name: "Flat White", category: "Hot Drinks", basePriceCents: 575 },
-  { slug: "americano", name: "Americano", category: "Hot Drinks", sizes: twoTierSizes(475), groups: HOT_DRINK_GROUPS },
-  { slug: "cappuccino", name: "Cappuccino", category: "Hot Drinks", sizes: twoTierSizes(575), groups: HOT_DRINK_GROUPS },
+  { slug: "espresso", name: "Espresso", category: "Hot Drinks", basePriceCents: 325, groups: ["caffeine"] },
+  { slug: "flat-white", name: "Flat White", category: "Hot Drinks", basePriceCents: 575, groups: ["caffeine"] },
+  { slug: "americano", name: "Americano", category: "Hot Drinks", sizes: twoTierSizes(475), groups: COFFEE_DRINK_GROUPS },
+  { slug: "cappuccino", name: "Cappuccino", category: "Hot Drinks", sizes: twoTierSizes(575), groups: COFFEE_DRINK_GROUPS },
   { slug: "hot-chai-latte", name: "Hot Chai Latte", category: "Hot Drinks", sizes: twoTierSizes(600), groups: HOT_DRINK_GROUPS },
-  { slug: "house-coffee", name: "House Coffee", category: "Hot Drinks", sizes: twoTierSizes(400), groups: HOT_DRINK_GROUPS },
+  { slug: "house-coffee", name: "House Coffee", category: "Hot Drinks", sizes: twoTierSizes(400), groups: COFFEE_DRINK_GROUPS },
   { slug: "hot-chocolate", name: "Hot Chocolate", category: "Hot Drinks", sizes: twoTierSizes(550), groups: HOT_DRINK_GROUPS },
-  { slug: "mocha", name: "Mocha", category: "Hot Drinks", sizes: [{ label: "12 oz", priceCents: 650 }, { label: "16 oz", priceCents: 700 }], groups: HOT_DRINK_GROUPS },
-  { slug: "white-mocha", name: "White Mocha", category: "Hot Drinks", sizes: twoTierSizes(650), groups: HOT_DRINK_GROUPS },
+  { slug: "mocha", name: "Mocha", category: "Hot Drinks", sizes: [{ label: "12 oz", priceCents: 650 }, { label: "16 oz", priceCents: 700 }], groups: COFFEE_DRINK_GROUPS },
+  { slug: "white-mocha", name: "White Mocha", category: "Hot Drinks", sizes: twoTierSizes(650), groups: COFFEE_DRINK_GROUPS },
 
   // Classic Lattes — 12oz/16oz only (confirmed via Hazelnut Latte modal)
   { slug: "banana-bread-latte", name: "Banana Bread Latte", category: "Classic Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
@@ -205,14 +219,14 @@ const ITEMS: ItemDef[] = [
       description: "Includes vanilla cold foam.",
       category: "Iced Signature Lattes",
       sizes: stdSizes(700), // confirmed via Tiramisu modal: 16/20/24 = $7/$8/$9
-      groups: HOT_DRINK_GROUPS,
+      groups: COFFEE_DRINK_GROUPS,
       featured: name === "Tres Leches Latte",
     })
   ),
 
   // Iced Classics Lattes — same 3-size (16/20/24) pattern as Iced Signature Lattes
-  { slug: "iced-latte", name: "Iced Latte", category: "Iced Classics Lattes", sizes: stdSizes(625), groups: HOT_DRINK_GROUPS },
-  { slug: "banana-bread-latte-iced", name: "Banana Bread Latte Iced", category: "Iced Classics Lattes", sizes: stdSizes(675), groups: HOT_DRINK_GROUPS },
+  { slug: "iced-latte", name: "Iced Latte", category: "Iced Classics Lattes", sizes: stdSizes(625), groups: COFFEE_DRINK_GROUPS },
+  { slug: "banana-bread-latte-iced", name: "Banana Bread Latte Iced", category: "Iced Classics Lattes", sizes: stdSizes(675), groups: COFFEE_DRINK_GROUPS },
 
   // Signature Chai
   { slug: "banana-bread-chai", name: "Banana Bread Chai", category: "Signature Chai", sizes: stdSizes(700), groups: HOT_DRINK_GROUPS },
@@ -224,7 +238,7 @@ const ITEMS: ItemDef[] = [
   { slug: "strawberry-lemonade", name: "Strawberry Lemonade", category: "Juice", basePriceCents: 500 },
 
   // Specialty — Caramel Frappe & Strawberry Horchata had no visible price; placeholders, please confirm
-  { slug: "caramel-frappe", name: "Caramel Frappe", category: "Specialty", basePriceCents: 650 },
+  { slug: "caramel-frappe", name: "Caramel Frappe", category: "Specialty", basePriceCents: 650, groups: ["caffeine"] },
   { slug: "strawberry-horchata", name: "Strawberry Horchata", category: "Specialty", basePriceCents: 675 },
 
   // Refreshers and Lemonade
@@ -233,8 +247,8 @@ const ITEMS: ItemDef[] = [
   { slug: "classic-lemonade", name: "Classic Lemonade", description: "Classic lemonade with no added flavor.", category: "Refreshers and Lemonade", sizes: [{ label: "16 oz", priceCents: 500 }, { label: "20 oz", priceCents: 600 }, { label: "24 oz", priceCents: 700 }], groups: ["refresher_addons"] },
 
   // Fall Menu — standard latte-style modifiers, not the refresher flavor list
-  { slug: "pumpkin-spice-iced-latte", name: "Pumpkin Spice Iced Latte", category: "Fall Menu", sizes: stdSizes(700), groups: HOT_DRINK_GROUPS },
-  { slug: "tres-leches-pumpkin-spice", name: "Tres Leches Pumpkin Spice", category: "Fall Menu", sizes: stdSizes(700), groups: HOT_DRINK_GROUPS },
+  { slug: "pumpkin-spice-iced-latte", name: "Pumpkin Spice Iced Latte", category: "Fall Menu", sizes: stdSizes(700), groups: COFFEE_DRINK_GROUPS },
+  { slug: "tres-leches-pumpkin-spice", name: "Tres Leches Pumpkin Spice", category: "Fall Menu", sizes: stdSizes(700), groups: COFFEE_DRINK_GROUPS },
   { slug: "pumpkin-spice-chai", name: "Pumpkin Spice Chai", category: "Fall Menu", sizes: [{ label: "16 oz", priceCents: 700 }, { label: "20 oz", priceCents: 800 }, { label: "24 oz", priceCents: 900 }], groups: HOT_DRINK_GROUPS },
   { slug: "pumpkin-spice-matcha", name: "Pumpkin Spice Matcha", category: "Fall Menu", sizes: stdSizes(700), groups: HOT_DRINK_GROUPS },
 

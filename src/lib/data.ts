@@ -28,9 +28,9 @@ export type PromoSlide = { id: string; image: string; alt: string; href?: string
 // to match the existing seasonal banner and avoid awkward cropping.
 export const promoSlides: PromoSlide[] = [
   {
-    id: "spring-seasonal",
-    image: "/images/seasonal-banner.png",
-    alt: "Chismesito Cafe spring seasonal drinks — Pistachio Matcha Latte and Strawberry Crunch Latte",
+    id: "fall-menu",
+    image: "/images/fall-menu-banner.png",
+    alt: "Chismesito Cafe Fall Menu — Pumpkin Spice Latte, Pumpkin Chai, Pumpkin Tres Leches Latte, and Pumpkin Matcha",
     href: "/menu",
   },
 ];
