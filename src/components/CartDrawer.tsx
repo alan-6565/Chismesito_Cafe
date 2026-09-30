@@ -1,13 +1,24 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useCart, summarizeCartLine } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
 
 export default function CartDrawer() {
   const { items, isOpen, close, updateQuantity, removeItem, totalCents } = useCart();
+  const pathname = usePathname();
 
-  if (!isOpen) return null;
+  // On desktop /menu the "Your Order" sidebar already shows the cart, so
+  // adding a drink shouldn't also slide the drawer over it.
+  const coveredBySidebar =
+    isOpen && pathname === "/menu" && window.matchMedia("(min-width: 1024px)").matches;
+  useEffect(() => {
+    if (coveredBySidebar) close();
+  }, [coveredBySidebar, close]);
+
+  if (!isOpen || coveredBySidebar) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">

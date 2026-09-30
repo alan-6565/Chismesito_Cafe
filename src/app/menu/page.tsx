@@ -8,10 +8,7 @@ export default async function MenuPage() {
   const categories = CATEGORY_ORDER.filter((c) => items.some((i) => i.category === c));
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-      <h1 className="text-center font-display font-bold text-3xl text-maroon">🌸 Our Menu 🌸</h1>
-      <p className="text-center text-ink/60 mt-2">Handcrafted daily.</p>
-
+    <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8 py-10">
       <MenuBrowser items={items} categories={categories} />
     </div>
   );

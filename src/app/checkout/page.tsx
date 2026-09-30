@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCart, summarizeCartLine } from "@/lib/cart-context";
+import OrderPanel from "@/components/OrderPanel";
+import { useCart } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
 
 export default function CheckoutPage() {
@@ -80,100 +81,102 @@ export default function CheckoutPage() {
     }
   };
 
+  const inputClass =
+    "w-full rounded-xl border border-blush bg-white px-4 py-3 text-sm focus:outline-none focus:border-rose focus:ring-2 focus:ring-rose/15";
+
   if (items.length === 0) {
     return (
-      <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-16 text-center">
-        <h1 className="font-display font-bold text-2xl text-maroon">Your cart is empty</h1>
-        <p className="mt-2 text-ink/60">Add something from the menu before checking out.</p>
-        <Link
-          href="/menu"
-          className="inline-block mt-6 rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-6 py-3 text-sm transition-colors"
-        >
-          Browse the Menu
-        </Link>
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-16">
+        <div className="rounded-3xl bg-cream-alt/70 border border-blush/60 px-6 py-14 text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose">Checkout</p>
+          <h1 className="mt-1 font-display font-bold text-3xl text-maroon">Your order is empty</h1>
+          <p className="mt-2 text-ink/60">Add something from the menu before checking out.</p>
+          <Link
+            href="/menu"
+            className="inline-block mt-6 rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-6 py-3 text-sm transition-colors"
+          >
+            Browse the Menu
+          </Link>
+          <p className="mt-8 font-script text-2xl text-rose -rotate-3">Un Cafecito Para Todo ♡</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="font-display font-bold text-3xl text-maroon text-center">Checkout</h1>
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
+      <Link href="/menu" className="text-sm text-rose hover:text-rose-dark">
+        ‹ Back to menu
+      </Link>
 
-      <div className="mt-8 rounded-2xl bg-white shadow-sm p-6 flex flex-col gap-3">
-        {items.map((item) => (
-          <div key={item.cartLineId} className="flex items-start justify-between text-sm gap-3">
-            <span className="text-ink/80">
-              {item.quantity}&times; {item.name}
-              {summarizeCartLine(item) && (
-                <span className="block text-[11px] text-ink/50">{summarizeCartLine(item)}</span>
-              )}
-            </span>
-            <span className="text-maroon font-medium shrink-0">
-              {formatCents(item.unitPriceCents * item.quantity)}
-            </span>
+      <div className="mt-4 grid lg:grid-cols-[minmax(0,1fr)_360px] gap-8 items-start">
+        <section>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose">Checkout</p>
+          <h1 className="mt-1 font-display font-bold text-3xl sm:text-4xl text-maroon">Almost Ready!</h1>
+          <p className="mt-2 text-ink/60">Tell us who&apos;s picking up and how you&apos;d like to pay.</p>
+
+          <div className="mt-6 rounded-3xl bg-white shadow-sm border border-blush/40 p-6 flex flex-col gap-4">
+            <h2 className="font-display font-semibold text-lg text-maroon">Your Details</h2>
+            <div>
+              <label className="block text-sm font-medium text-maroon mb-1">Name</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputClass} />
+            </div>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-maroon mb-1">
+                  Phone <span className="text-ink/40 font-normal">(optional)</span>
+                </label>
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="For pickup updates"
+                  className={inputClass}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-maroon mb-1">
+                  Email <span className="text-ink/40 font-normal">(optional)</span>
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="For a confirmation email"
+                  className={inputClass}
+                />
+              </div>
+            </div>
           </div>
-        ))}
-        <div className="border-t border-blush pt-3 flex items-center justify-between font-semibold text-maroon">
-          <span>Total</span>
-          <span>{formatCents(totalCents)}</span>
-        </div>
-      </div>
 
-      <div className="mt-8 flex flex-col gap-4">
-        <div>
-          <label className="block text-sm font-medium text-maroon mb-1">Name</label>
-          <input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
-            className="w-full rounded-xl border border-blush px-4 py-2.5 text-sm focus:outline-none focus:border-rose"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-maroon mb-1">
-            Phone <span className="text-ink/40">(optional)</span>
-          </label>
-          <input
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            placeholder="For pickup updates"
-            className="w-full rounded-xl border border-blush px-4 py-2.5 text-sm focus:outline-none focus:border-rose"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-maroon mb-1">
-            Email <span className="text-ink/40">(optional — for a confirmation email)</span>
-          </label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full rounded-xl border border-blush px-4 py-2.5 text-sm focus:outline-none focus:border-rose"
-          />
-        </div>
+          <div className="mt-6 rounded-3xl bg-white shadow-sm border border-blush/40 p-6 flex flex-col gap-3">
+            <h2 className="font-display font-semibold text-lg text-maroon">How would you like to pay?</h2>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <div className="grid sm:grid-cols-2 gap-3 mt-2">
-          <button
-            onClick={submitPickupOrder}
-            disabled={submitting !== null}
-            className="rounded-full bg-rose hover:bg-rose-dark disabled:opacity-60 text-white font-semibold px-6 py-3 text-sm transition-colors"
-          >
-            {submitting === "pickup" ? "Placing order..." : "Order Ahead — Pay at Pickup"}
-          </button>
-          <button
-            onClick={submitOnlinePayment}
-            disabled={submitting !== null}
-            className="rounded-full border-2 border-maroon text-maroon font-semibold px-6 py-3 text-sm hover:bg-maroon hover:text-cream disabled:opacity-60 transition-colors"
-          >
-            {submitting === "online" ? "Redirecting to payment..." : "Pay Online Now"}
-          </button>
-        </div>
-        <p className="text-xs text-ink/40 text-center">
-          Pay online now, or order ahead and pay with card or cash when you pick it up in-store.
-        </p>
+            <button
+              onClick={submitOnlinePayment}
+              disabled={submitting !== null}
+              className="rounded-full bg-rose hover:bg-rose-dark disabled:opacity-60 text-white font-semibold px-6 py-3.5 text-sm shadow-sm transition-colors"
+            >
+              {submitting === "online" ? "Redirecting to payment..." : `Pay Online Now · ${formatCents(totalCents)} ›`}
+            </button>
+            <button
+              onClick={submitPickupOrder}
+              disabled={submitting !== null}
+              className="rounded-full border-2 border-maroon text-maroon font-semibold px-6 py-3 text-sm hover:bg-maroon hover:text-cream disabled:opacity-60 transition-colors"
+            >
+              {submitting === "pickup" ? "Placing order..." : "Order Ahead — Pay at Pickup"}
+            </button>
+            <p className="text-xs text-ink/50 text-center">
+              Pay online now, or order ahead and pay with card or cash when you pick it up in-store.
+            </p>
+          </div>
+        </section>
+
+        <aside className="lg:sticky lg:top-24">
+          <OrderPanel />
+          <p className="mt-6 font-script text-2xl text-rose text-center -rotate-6">Un Cafecito Para Todo ♡</p>
+        </aside>
       </div>
     </div>
   );
