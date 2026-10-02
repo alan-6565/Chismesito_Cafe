@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -38,8 +39,8 @@ export default async function OrderConfirmationPage({
         .update({ payment_status: "paid", ...(stripeEmail ? { customer_email: stripeEmail } : {}) })
         .eq("id", id);
       order.payment_status = "paid";
-      sendOrderConfirmationEmail(id).catch(() => {});
-      notifyStaffOfNewOrder(id).catch(() => {});
+      after(() => sendOrderConfirmationEmail(id));
+      after(() => notifyStaffOfNewOrder(id));
     }
   }
 

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { sendOrderReadyEmail } from "@/lib/email";
 
@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   }
 
   if (update.fulfillment_status === "ready") {
-    sendOrderReadyEmail(id).catch(() => {});
+    after(() => sendOrderReadyEmail(id));
   }
 
   return NextResponse.json({ ok: true });

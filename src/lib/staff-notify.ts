@@ -13,7 +13,10 @@ const STAFF_EMAIL = process.env.STAFF_EMAIL;
  * both fire a duplicate for the same order.
  */
 export async function notifyStaffOfNewOrder(orderId: string): Promise<void> {
-  if (!resend || !STAFF_EMAIL) return;
+  if (!resend || !STAFF_EMAIL) {
+    console.error("[email] staff notification skipped: RESEND_API_KEY or STAFF_EMAIL not set");
+    return;
+  }
 
   const { data: order } = await supabaseAdmin
     .from("orders")
@@ -38,7 +41,9 @@ export async function notifyStaffOfNewOrder(orderId: string): Promise<void> {
     html: `<p>New order from <strong>${order.customer_name}</strong> — ${itemCount ?? "?"} item(s), ${formatCents(order.total_cents)}. ${payLine}.</p><p><strong>Pickup: ${pickupLine}</strong></p><p>Order #${order.id.slice(0, 8)} &middot; placed ${formatOrderStamp(order.created_at)}</p>`,
   });
 
-  if (!error) {
+  if (error) {
+    console.error(`[email] send failed for order ${orderId}:`, error);
+  } else {
     await supabaseAdmin
       .from("orders")
       .update({ staff_notified_at: new Date().toISOString() })

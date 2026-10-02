@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase";
@@ -38,8 +38,8 @@ export async function POST(req: NextRequest) {
     }
 
     if (order) {
-      sendOrderConfirmationEmail(order.id).catch(() => {});
-      notifyStaffOfNewOrder(order.id).catch(() => {});
+      after(() => sendOrderConfirmationEmail(order.id));
+      after(() => notifyStaffOfNewOrder(order.id));
     }
   }
 

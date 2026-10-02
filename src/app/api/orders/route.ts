@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { priceCartLines, type CartLine } from "@/lib/pricing";
 import { isOpenNow, resolvePickupSlot } from "@/lib/hours";
@@ -65,8 +65,8 @@ export async function POST(req: NextRequest) {
   }
 
   // Pay-at-pickup orders are confirmed immediately, no payment gate to wait on.
-  sendOrderConfirmationEmail(order.id).catch(() => {});
-  notifyStaffOfNewOrder(order.id).catch(() => {});
+  after(() => sendOrderConfirmationEmail(order.id));
+  after(() => notifyStaffOfNewOrder(order.id));
 
   return NextResponse.json({ orderId: order.id, totalCents: priced.totalCents });
 }

@@ -108,7 +108,9 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
     html,
   });
 
-  if (!error) {
+  if (error) {
+    console.error(`[email] send failed for order ${orderId}:`, error);
+  } else {
     await supabaseAdmin
       .from("orders")
       .update({ confirmation_email_sent_at: new Date().toISOString() })
@@ -154,7 +156,9 @@ export async function sendOrderReadyEmail(orderId: string): Promise<void> {
     html,
   });
 
-  if (!error) {
+  if (error) {
+    console.error(`[email] send failed for order ${orderId}:`, error);
+  } else {
     await supabaseAdmin
       .from("orders")
       .update({ ready_email_sent_at: new Date().toISOString() })
