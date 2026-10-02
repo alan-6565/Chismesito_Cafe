@@ -184,7 +184,7 @@ const ITEMS: ItemDef[] = [
   { slug: "white-mocha", name: "White Mocha", category: "Coffee & Hot Drinks", sizes: twoTierSizes(650), groups: COFFEE_DRINK_GROUPS },
 
   // Classic Lattes — 12oz/16oz only (confirmed via Hazelnut Latte modal)
-  { slug: "banana-bread-latte", name: "Banana Bread Latte", category: "Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
+  { slug: "banana-bread-latte", name: "Banana Bread Latte", category: "Lattes", sizes: [{ label: "12 oz", priceCents: 675 }, { label: "16 oz", priceCents: 750 }], groups: CLASSIC_LATTE_GROUPS },
   { slug: "caramel-latte", name: "Caramel Latte", category: "Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
   { slug: "hazelnut-latte", name: "Hazelnut Latte", category: "Lattes", sizes: [{ label: "12 oz", priceCents: 625 }, { label: "16 oz", priceCents: 675 }], groups: CLASSIC_LATTE_GROUPS, featured: true },
   { slug: "vanilla-latte", name: "Vanilla Latte", category: "Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
@@ -250,7 +250,7 @@ const ITEMS: ItemDef[] = [
   { slug: "pumpkin-spice-iced-latte", name: "Pumpkin Spice Iced Latte", category: "Fall Menu", sizes: stdSizes(700), groups: COFFEE_DRINK_GROUPS },
   { slug: "tres-leches-pumpkin-spice", name: "Tres Leches Pumpkin Spice", category: "Fall Menu", sizes: stdSizes(700), groups: COFFEE_DRINK_GROUPS },
   { slug: "pumpkin-spice-chai", name: "Pumpkin Spice Chai", category: "Fall Menu", sizes: [{ label: "16 oz", priceCents: 700 }, { label: "20 oz", priceCents: 800 }, { label: "24 oz", priceCents: 900 }], groups: HOT_DRINK_GROUPS },
-  { slug: "pumpkin-spice-matcha", name: "Pumpkin Spice Matcha", category: "Fall Menu", sizes: stdSizes(700), groups: HOT_DRINK_GROUPS },
+  { slug: "pumpkin-spice-matcha", name: "Pumpkin Spice Matcha", category: "Fall Menu", sizes: [{ label: "16 oz", priceCents: 800 }, { label: "20 oz", priceCents: 875 }, { label: "24 oz", priceCents: 950 }], groups: HOT_DRINK_GROUPS },
 
   // Snacks
   { slug: "cheetos-colmillos", name: "Cheetos Colmillos", category: "Snacks", basePriceCents: 550 },
