@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { formatCents } from "@/lib/money";
-import { CATEGORY_ORDER } from "@/lib/menu-categories";
+import { CATEGORY_ORDER, categoriesFor } from "@/lib/menu-categories";
 
 type AdminMenuItem = {
   id: string;
@@ -120,7 +120,7 @@ export default function AdminMenuPage() {
     setAdding(false);
   };
 
-  const categories = CATEGORY_ORDER.filter((c) => items.some((i) => i.category === c));
+  const categories = categoriesFor(items);
 
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">

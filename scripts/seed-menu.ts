@@ -173,30 +173,30 @@ const ITEMS: ItemDef[] = [
   // Hot Drinks — Espresso and Flat White have no size; everything else is
   // 12oz/16oz (confirmed via the Mocha modal, and via the real Toast order
   // page for Espresso/Flat White/Americano/Cappuccino/Hot Chai/Hot Chocolate)
-  { slug: "espresso", name: "Espresso", category: "Hot Drinks", basePriceCents: 325, groups: ["caffeine"] },
-  { slug: "flat-white", name: "Flat White", category: "Hot Drinks", basePriceCents: 575, groups: ["caffeine"] },
-  { slug: "americano", name: "Americano", category: "Hot Drinks", sizes: twoTierSizes(475), groups: COFFEE_DRINK_GROUPS },
-  { slug: "cappuccino", name: "Cappuccino", category: "Hot Drinks", sizes: twoTierSizes(575), groups: COFFEE_DRINK_GROUPS },
-  { slug: "hot-chai-latte", name: "Hot Chai Latte", category: "Hot Drinks", sizes: twoTierSizes(600), groups: HOT_DRINK_GROUPS },
-  { slug: "house-coffee", name: "House Coffee", category: "Hot Drinks", sizes: twoTierSizes(400), groups: COFFEE_DRINK_GROUPS },
-  { slug: "hot-chocolate", name: "Hot Chocolate", category: "Hot Drinks", sizes: twoTierSizes(550), groups: HOT_DRINK_GROUPS },
-  { slug: "mocha", name: "Mocha", category: "Hot Drinks", sizes: [{ label: "12 oz", priceCents: 650 }, { label: "16 oz", priceCents: 700 }], groups: COFFEE_DRINK_GROUPS },
-  { slug: "white-mocha", name: "White Mocha", category: "Hot Drinks", sizes: twoTierSizes(650), groups: COFFEE_DRINK_GROUPS },
+  { slug: "espresso", name: "Espresso", category: "Coffee & Hot Drinks", basePriceCents: 325, groups: ["caffeine"] },
+  { slug: "flat-white", name: "Flat White", category: "Coffee & Hot Drinks", basePriceCents: 575, groups: ["caffeine"] },
+  { slug: "americano", name: "Americano", category: "Coffee & Hot Drinks", sizes: twoTierSizes(475), groups: COFFEE_DRINK_GROUPS },
+  { slug: "cappuccino", name: "Cappuccino", category: "Coffee & Hot Drinks", sizes: twoTierSizes(575), groups: COFFEE_DRINK_GROUPS },
+  { slug: "hot-chai-latte", name: "Hot Chai Latte", category: "Chai", sizes: twoTierSizes(600), groups: HOT_DRINK_GROUPS },
+  { slug: "house-coffee", name: "House Coffee", category: "Coffee & Hot Drinks", sizes: twoTierSizes(400), groups: COFFEE_DRINK_GROUPS },
+  { slug: "hot-chocolate", name: "Hot Chocolate", category: "Coffee & Hot Drinks", sizes: twoTierSizes(550), groups: HOT_DRINK_GROUPS },
+  { slug: "mocha", name: "Mocha", category: "Coffee & Hot Drinks", sizes: [{ label: "12 oz", priceCents: 650 }, { label: "16 oz", priceCents: 700 }], groups: COFFEE_DRINK_GROUPS },
+  { slug: "white-mocha", name: "White Mocha", category: "Coffee & Hot Drinks", sizes: twoTierSizes(650), groups: COFFEE_DRINK_GROUPS },
 
   // Classic Lattes — 12oz/16oz only (confirmed via Hazelnut Latte modal)
-  { slug: "banana-bread-latte", name: "Banana Bread Latte", category: "Classic Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
-  { slug: "caramel-latte", name: "Caramel Latte", category: "Classic Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
-  { slug: "hazelnut-latte", name: "Hazelnut Latte", category: "Classic Lattes", sizes: [{ label: "12 oz", priceCents: 625 }, { label: "16 oz", priceCents: 675 }], groups: CLASSIC_LATTE_GROUPS, featured: true },
-  { slug: "vanilla-latte", name: "Vanilla Latte", category: "Classic Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
+  { slug: "banana-bread-latte", name: "Banana Bread Latte", category: "Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
+  { slug: "caramel-latte", name: "Caramel Latte", category: "Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
+  { slug: "hazelnut-latte", name: "Hazelnut Latte", category: "Lattes", sizes: [{ label: "12 oz", priceCents: 625 }, { label: "16 oz", priceCents: 675 }], groups: CLASSIC_LATTE_GROUPS, featured: true },
+  { slug: "vanilla-latte", name: "Vanilla Latte", category: "Lattes", sizes: twoTierSizes(625), groups: CLASSIC_LATTE_GROUPS },
 
   // Signature Matchas
-  { slug: "matcha-latte", name: "Matcha Latte", category: "Signature Matchas", sizes: [{ label: "16 oz", priceCents: 725 }, { label: "20 oz", priceCents: 825 }, { label: "24 oz", priceCents: 900 }], groups: MATCHA_GROUPS },
-  { slug: "vanilla-matcha-latte", name: "Vanilla Matcha Latte", category: "Signature Matchas", sizes: [{ label: "16 oz", priceCents: 750 }, { label: "20 oz", priceCents: 825 }, { label: "24 oz", priceCents: 925 }], groups: MATCHA_GROUPS },
-  { slug: "banana-bread-matcha-latte", name: "Banana Bread Matcha Latte", category: "Signature Matchas", sizes: stdSizes(800), groups: MATCHA_GROUPS },
-  { slug: "cookie-butter-matcha-latte", name: "Cookie Butter Matcha Latte", category: "Signature Matchas", sizes: stdSizes(800), groups: MATCHA_GROUPS, featured: true },
-  { slug: "mazapan-matcha-latte", name: "Mazapan Matcha Latte", category: "Signature Matchas", sizes: stdSizes(800), groups: MATCHA_GROUPS, featured: true },
-  { slug: "strawberry-matcha-latte", name: "Strawberry Matcha Latte", category: "Signature Matchas", sizes: stdSizes(800), groups: MATCHA_GROUPS, featured: true },
-  { slug: "tres-leches-matcha", name: "Tres Leches Matcha", category: "Signature Matchas", sizes: stdSizes(800), groups: MATCHA_GROUPS },
+  { slug: "matcha-latte", name: "Matcha Latte", category: "Matcha", sizes: [{ label: "16 oz", priceCents: 725 }, { label: "20 oz", priceCents: 825 }, { label: "24 oz", priceCents: 900 }], groups: MATCHA_GROUPS },
+  { slug: "vanilla-matcha-latte", name: "Vanilla Matcha Latte", category: "Matcha", sizes: [{ label: "16 oz", priceCents: 750 }, { label: "20 oz", priceCents: 825 }, { label: "24 oz", priceCents: 925 }], groups: MATCHA_GROUPS },
+  { slug: "banana-bread-matcha-latte", name: "Banana Bread Matcha Latte", category: "Matcha", sizes: stdSizes(800), groups: MATCHA_GROUPS },
+  { slug: "cookie-butter-matcha-latte", name: "Cookie Butter Matcha Latte", category: "Matcha", sizes: stdSizes(800), groups: MATCHA_GROUPS, featured: true },
+  { slug: "mazapan-matcha-latte", name: "Mazapan Matcha Latte", category: "Matcha", sizes: stdSizes(800), groups: MATCHA_GROUPS, featured: true },
+  { slug: "strawberry-matcha-latte", name: "Strawberry Matcha Latte", category: "Matcha", sizes: stdSizes(800), groups: MATCHA_GROUPS, featured: true },
+  { slug: "tres-leches-matcha", name: "Tres Leches Matcha", category: "Matcha", sizes: stdSizes(800), groups: MATCHA_GROUPS },
 
   // Iced Signature Lattes — flat-priced, all include vanilla cold foam
   ...[
@@ -217,7 +217,7 @@ const ITEMS: ItemDef[] = [
       slug,
       name,
       description: "Includes vanilla cold foam.",
-      category: "Iced Signature Lattes",
+      category: "Signature Drinks",
       sizes: stdSizes(700), // confirmed via Tiramisu modal: 16/20/24 = $7/$8/$9
       groups: COFFEE_DRINK_GROUPS,
       featured: name === "Tres Leches Latte",
@@ -225,21 +225,21 @@ const ITEMS: ItemDef[] = [
   ),
 
   // Iced Classics Lattes — same 3-size (16/20/24) pattern as Iced Signature Lattes
-  { slug: "iced-latte", name: "Iced Latte", category: "Iced Classics Lattes", sizes: stdSizes(625), groups: COFFEE_DRINK_GROUPS },
-  { slug: "banana-bread-latte-iced", name: "Banana Bread Latte Iced", category: "Iced Classics Lattes", sizes: stdSizes(675), groups: COFFEE_DRINK_GROUPS },
+  { slug: "iced-latte", name: "Iced Latte", category: "Lattes", sizes: stdSizes(625), groups: COFFEE_DRINK_GROUPS },
+  { slug: "banana-bread-latte-iced", name: "Banana Bread Latte Iced", category: "Lattes", sizes: stdSizes(675), groups: COFFEE_DRINK_GROUPS },
 
   // Signature Chai
-  { slug: "banana-bread-chai", name: "Banana Bread Chai", category: "Signature Chai", sizes: stdSizes(700), groups: HOT_DRINK_GROUPS },
-  { slug: "chai-latte-iced", name: "Chai Latte Iced", category: "Signature Chai", sizes: stdSizes(600), groups: HOT_DRINK_GROUPS },
-  { slug: "strawberry-horchata-chai", name: "Strawberry Horchata Chai", category: "Signature Chai", sizes: stdSizes(725), groups: HOT_DRINK_GROUPS },
-  { slug: "vanilla-chai", name: "Vanilla Chai", category: "Signature Chai", sizes: stdSizes(625), groups: HOT_DRINK_GROUPS },
+  { slug: "banana-bread-chai", name: "Banana Bread Chai", category: "Chai", sizes: stdSizes(700), groups: HOT_DRINK_GROUPS },
+  { slug: "chai-latte-iced", name: "Chai Latte Iced", category: "Chai", sizes: stdSizes(600), groups: HOT_DRINK_GROUPS },
+  { slug: "strawberry-horchata-chai", name: "Strawberry Horchata Chai", category: "Chai", sizes: stdSizes(725), groups: HOT_DRINK_GROUPS },
+  { slug: "vanilla-chai", name: "Vanilla Chai", category: "Chai", sizes: stdSizes(625), groups: HOT_DRINK_GROUPS },
 
   // Juice — no price was visible in the screenshots; placeholder, please confirm
-  { slug: "strawberry-lemonade", name: "Strawberry Lemonade", category: "Juice", basePriceCents: 500 },
+  { slug: "strawberry-lemonade", name: "Strawberry Lemonade", category: "Refreshers and Lemonade", basePriceCents: 500 },
 
   // Specialty — Caramel Frappe & Strawberry Horchata had no visible price; placeholders, please confirm
-  { slug: "caramel-frappe", name: "Caramel Frappe", category: "Specialty", basePriceCents: 650, groups: ["caffeine"] },
-  { slug: "strawberry-horchata", name: "Strawberry Horchata", category: "Specialty", basePriceCents: 675 },
+  { slug: "caramel-frappe", name: "Caramel Frappe", category: "Signature Drinks", basePriceCents: 650, groups: ["caffeine"] },
+  { slug: "strawberry-horchata", name: "Strawberry Horchata", category: "Signature Drinks", basePriceCents: 675 },
 
   // Refreshers and Lemonade
   { slug: "red-bull-refresher", name: "Red Bull Refresher", description: "Energy drink refresher with your choice of flavor and add-ons.", category: "Refreshers and Lemonade", sizes: [{ label: "16 oz", priceCents: 625 }, { label: "20 oz", priceCents: 725 }, { label: "24 oz", priceCents: 825 }], groups: REFRESHER_GROUPS, featured: true },

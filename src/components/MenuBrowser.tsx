@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import ProductCard from "@/components/ProductCard";
 import OrderPanel from "@/components/OrderPanel";
-import { CupIcon, GridIcon, IcedCupIcon, LeafIcon, PastryIcon, StarIcon } from "@/components/icons";
+import { CupIcon, GridIcon, HeartIcon, IcedCupIcon, LeafIcon, PastryIcon, StarIcon } from "@/components/icons";
 import { useCart } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
 import type { MenuItemFull } from "@/lib/menu";
@@ -15,6 +15,7 @@ const ALL = "Full Menu";
 function CategoryIcon({ category, className }: { category: string; className: string }) {
   if (category === FEATURED) return <StarIcon className={className} />;
   if (category === ALL) return <GridIcon className={className} />;
+  if (/signature/i.test(category)) return <HeartIcon className={className} />;
   if (/matcha|chai/i.test(category)) return <LeafIcon className={className} />;
   if (/iced|refresher|juice|sago/i.test(category)) return <IcedCupIcon className={className} />;
   if (/pastr|snack/i.test(category)) return <PastryIcon className={className} />;
@@ -50,7 +51,9 @@ export default function MenuBrowser({
     active === FEATURED
       ? items.filter((i) => i.featured)
       : active === ALL
-        ? items
+        ? // Grouped by section (items arrive sorted by name) so the full
+          // menu reads in the same order as the category tabs.
+          [...items].sort((a, b) => categories.indexOf(a.category) - categories.indexOf(b.category))
         : items.filter((i) => i.category === active);
 
   const heading = headings[active] ?? {
