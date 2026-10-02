@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { formatCents } from "@/lib/money";
 
 type MonthSummary = {
@@ -65,9 +64,6 @@ export default function AdminBillingPage() {
             $1 per item sold through the site (paid online or picked up)
           </p>
         </div>
-        <Link href="/admin/orders" className="text-sm text-ink/50 hover:text-rose underline">
-          View Orders
-        </Link>
       </div>
 
       {!data ? (

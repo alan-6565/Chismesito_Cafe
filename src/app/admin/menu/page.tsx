@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { formatCents } from "@/lib/money";
 import { CATEGORY_ORDER } from "@/lib/menu-categories";
 
@@ -130,9 +129,6 @@ export default function AdminMenuPage() {
           <h1 className="font-display font-bold text-2xl text-maroon">Menu</h1>
           <p className="text-xs text-ink/50">Upload photos and toggle items sold out for today</p>
         </div>
-        <Link href="/admin/orders" className="text-sm text-ink/50 hover:text-rose underline">
-          Orders
-        </Link>
       </div>
 
       <div className="mb-8">

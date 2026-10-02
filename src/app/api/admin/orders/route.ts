@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 export async function GET() {
   const { data: orders, error: ordersError } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, customer_phone, payment_method, payment_status, fulfillment_status, total_cents, staff_notes")
+    .select("id, created_at, customer_name, customer_phone, payment_method, payment_status, fulfillment_status, total_cents, staff_notes, pickup_at")
     .order("created_at", { ascending: false })
     .limit(100);
 
@@ -15,7 +15,7 @@ export async function GET() {
   const { data: items, error: itemsError } = orders.length
     ? await supabaseAdmin
         .from("order_items")
-        .select("order_id, name_snapshot, price_cents_snapshot, quantity, size_label, modifiers, notes")
+        .select("order_id, name_snapshot, price_cents_snapshot, quantity, size_label, modifiers, notes, menu_items(image_url)")
         .in("order_id", orders.map((o) => o.id))
     : { data: [], error: null };
 

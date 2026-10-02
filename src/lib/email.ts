@@ -3,6 +3,7 @@ import { Resend } from "resend";
 import { supabaseAdmin } from "./supabase";
 import { formatCents } from "./money";
 import { business } from "./data";
+import { formatOrderStamp, formatPickupTime } from "./hours";
 
 export const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -58,7 +59,7 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, customer_name, customer_email, payment_method, total_cents, confirmation_email_sent_at")
+    .select("id, created_at, customer_name, customer_email, payment_method, total_cents, pickup_at, confirmation_email_sent_at")
     .eq("id", orderId)
     .single();
 
@@ -71,9 +72,12 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
 
   const paidOnline = order.payment_method === "online";
   const totalLabel = paidOnline ? "Total paid" : "Total due at pickup";
+  const readyLine = order.pickup_at
+    ? `it'll be ready for pickup ${formatPickupTime(order.pickup_at)}`
+    : "it'll be ready in about 5-10 minutes";
   const bodyLine = paidOnline
-    ? "Your order is paid and in — it'll be ready in about 5-10 minutes. Show this email (or your name) at pickup."
-    : "Your order is in — it'll be ready in about 5-10 minutes. Show this email (or your name) at pickup and pay in-store.";
+    ? `Your order is paid and in — ${readyLine}. Show this email (or your name) at pickup.`
+    : `Your order is in — ${readyLine}. Show this email (or your name) at pickup and pay in-store.`;
 
   const html = `
     <div style="background:#fdf6ef;padding:32px 16px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
@@ -81,7 +85,7 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
         <p style="text-align:center;font-size:32px;margin:0 0 8px;">🌸</p>
         <h1 style="text-align:center;color:#451820;font-size:24px;margin:0 0 8px;">Thanks, ${order.customer_name}!</h1>
         <p style="text-align:center;color:#6b4a50;font-size:14px;margin:0 0 4px;">${bodyLine}</p>
-        <p style="text-align:center;color:#a08890;font-size:11px;font-family:ui-monospace,monospace;margin:0 0 24px;">Order #${order.id.slice(0, 8)}</p>
+        <p style="text-align:center;color:#a08890;font-size:11px;font-family:ui-monospace,monospace;margin:0 0 24px;">Order #${order.id.slice(0, 8)} &middot; ${formatOrderStamp(order.created_at)}</p>
 
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;padding:20px 24px;">
           ${itemsHtml(items ?? [])}

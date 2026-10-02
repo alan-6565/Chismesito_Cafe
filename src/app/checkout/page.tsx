@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import OrderPanel from "@/components/OrderPanel";
 import { useCart } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
+import { getPickupSlots, isOpenNow, type PickupDay } from "@/lib/hours";
 
 export default function CheckoutPage() {
   const { items, totalCents, clear } = useCart();
@@ -15,11 +16,36 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState<"pickup" | "online" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Same mount-then-resolve pattern as OpenStatusBadge, refreshed every
+  // minute so slots that pass while the customer is on this page drop off.
+  const [pickupDays, setPickupDays] = useState<PickupDay[]>([]);
+  const [openNow, setOpenNow] = useState(true);
+  const [pickupMode, setPickupMode] = useState<"asap" | "scheduled">("asap");
+  const [pickupDate, setPickupDate] = useState("");
+  const [pickupTime, setPickupTime] = useState("");
+
+  useEffect(() => {
+    const update = () => {
+      setPickupDays(getPickupSlots());
+      setOpenNow(isOpenNow());
+    };
+    update();
+    const interval = setInterval(update, 60_000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fall back to the first available slot whenever the chosen one is gone
+  // (or nothing has been chosen yet); ASAP isn't an option while closed.
+  const selectedDay = pickupDays.find((d) => d.date === pickupDate) ?? pickupDays[0];
+  const effectiveDate = selectedDay?.date ?? "";
+  const effectiveTime = selectedDay?.slots.includes(pickupTime) ? pickupTime : (selectedDay?.slots[0] ?? "");
+  const effectiveMode = openNow ? pickupMode : "scheduled";
 
   const cartPayload = () => ({
     customerName: name,
     customerPhone: phone,
     customerEmail: email,
+    pickupSlot: effectiveMode === "scheduled" ? `${effectiveDate}T${effectiveTime}` : undefined,
     items: items.map((i) => ({
       menuItemId: i.menuItemId,
       sizeId: i.sizeId,
@@ -32,6 +58,10 @@ export default function CheckoutPage() {
   const submitPickupOrder = async () => {
     if (!name.trim()) {
       setError("Please enter your name so we know who's picking up.");
+      return;
+    }
+    if (effectiveMode === "scheduled" && !(effectiveDate && effectiveTime)) {
+      setError("Please choose a pickup time.");
       return;
     }
     setSubmitting("pickup");
@@ -57,6 +87,10 @@ export default function CheckoutPage() {
   const submitOnlinePayment = async () => {
     if (!name.trim()) {
       setError("Please enter your name so we know who's picking up.");
+      return;
+    }
+    if (effectiveMode === "scheduled" && !(effectiveDate && effectiveTime)) {
+      setError("Please choose a pickup time.");
       return;
     }
     setSubmitting("online");
@@ -146,6 +180,65 @@ export default function CheckoutPage() {
                 />
               </div>
             </div>
+          </div>
+
+          <div className="mt-6 rounded-3xl bg-white shadow-sm border border-blush/40 p-6 flex flex-col gap-4">
+            <h2 className="font-display font-semibold text-lg text-maroon">Pickup Time</h2>
+            {pickupDays.length === 0 ? (
+              <p className="text-sm text-ink/60">{openNow ? "We'll start on it right away." : "Online ordering opens again soon."}</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-2 gap-2">
+                  {(["asap", "scheduled"] as const).map((mode) => {
+                    const disabled = mode === "asap" && !openNow;
+                    return (
+                      <button
+                        key={mode}
+                        type="button"
+                        disabled={disabled}
+                        onClick={() => setPickupMode(mode)}
+                        className={`rounded-xl border px-4 py-3 text-sm font-semibold transition-colors disabled:opacity-40 ${
+                          effectiveMode === mode ? "border-rose bg-blush-soft text-rose" : "border-blush text-maroon hover:bg-cream-alt"
+                        }`}
+                      >
+                        {mode === "asap" ? (openNow ? "ASAP" : "ASAP · Closed now") : "Order Ahead"}
+                      </button>
+                    );
+                  })}
+                </div>
+                {effectiveMode === "scheduled" && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-maroon mb-1">Day</label>
+                      <select
+                        value={effectiveDate}
+                        onChange={(e) => {
+                          setPickupDate(e.target.value);
+                          setPickupTime("");
+                        }}
+                        className={inputClass}
+                      >
+                        {pickupDays.map((d) => (
+                          <option key={d.date} value={d.date}>
+                            {d.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-maroon mb-1">Time</label>
+                      <select value={effectiveTime} onChange={(e) => setPickupTime(e.target.value)} className={inputClass}>
+                        {selectedDay?.slots.map((t) => (
+                          <option key={t} value={t}>
+                            {t}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
           </div>
 
           <div className="mt-6 rounded-3xl bg-white shadow-sm border border-blush/40 p-6 flex flex-col gap-3">

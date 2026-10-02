@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { priceCartLines, type CartLine } from "@/lib/pricing";
+import { isOpenNow, resolvePickupSlot } from "@/lib/hours";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { notifyStaffOfNewOrder } from "@/lib/staff-notify";
 
@@ -8,15 +9,27 @@ type CartPayload = {
   customerName: string;
   customerPhone?: string;
   customerEmail?: string;
+  // Pacific "YYYY-MM-DDTHH:MM" for order-ahead; omitted means ASAP.
+  pickupSlot?: string;
   items: CartLine[];
 };
 
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as CartPayload;
-  const { customerName, customerPhone, customerEmail, items } = body;
+  const { customerName, customerPhone, customerEmail, pickupSlot, items } = body;
 
   if (!customerName?.trim() || !items?.length) {
     return NextResponse.json({ error: "Missing name or items" }, { status: 400 });
+  }
+
+  let pickupAt: string | null = null;
+  if (pickupSlot) {
+    pickupAt = resolvePickupSlot(pickupSlot);
+    if (!pickupAt) {
+      return NextResponse.json({ error: "That pickup time is no longer available — please pick another." }, { status: 400 });
+    }
+  } else if (!isOpenNow()) {
+    return NextResponse.json({ error: "We're closed right now — please choose a pickup time." }, { status: 400 });
   }
 
   const priced = await priceCartLines(items);
@@ -34,6 +47,7 @@ export async function POST(req: NextRequest) {
       payment_status: "unpaid",
       fulfillment_status: "pending",
       total_cents: priced.totalCents,
+      pickup_at: pickupAt,
     })
     .select()
     .single();

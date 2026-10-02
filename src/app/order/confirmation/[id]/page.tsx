@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { formatCents } from "@/lib/money";
+import { formatOrderStamp, formatPickupTime } from "@/lib/hours";
 import { sendOrderConfirmationEmail } from "@/lib/email";
 import { notifyStaffOfNewOrder } from "@/lib/staff-notify";
 import ClearCartOnMount from "@/components/ClearCartOnMount";
@@ -19,7 +20,7 @@ export default async function OrderConfirmationPage({
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, total_cents, fulfillment_status, payment_method, payment_status")
+    .select("id, created_at, customer_name, total_cents, fulfillment_status, payment_method, payment_status, pickup_at")
     .eq("id", id)
     .single();
 
@@ -62,6 +63,10 @@ export default async function OrderConfirmationPage({
           : "Your order is in. Show this confirmation (or your name) at pickup and pay in-store."}
       </p>
       <p className="mt-1 text-xs text-ink/40 font-mono">Order #{order.id.slice(0, 8)}</p>
+      <p className="mt-1 text-sm text-ink/60">Ordered {formatOrderStamp(order.created_at)}</p>
+      <p className="mt-3 inline-block rounded-full bg-blush-soft text-rose text-sm font-semibold px-4 py-1.5">
+        Pickup: {order.pickup_at ? formatPickupTime(order.pickup_at) : "ASAP (about 5-10 min)"}
+      </p>
 
       <div className="mt-8 rounded-2xl bg-white shadow-sm p-6 flex flex-col gap-3 text-left">
         {items?.map((item, i) => {
