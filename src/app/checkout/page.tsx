@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import OrderPanel from "@/components/OrderPanel";
 import { useCart } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
-import { getPickupSlots, isOpenNow, type PickupDay } from "@/lib/hours";
+import { formatTime, getPickupSlots, isOpenNow, type PickupDay } from "@/lib/hours";
 
 export default function CheckoutPage() {
   const { items, totalCents, clear } = useCart();
@@ -230,7 +230,7 @@ export default function CheckoutPage() {
                       <select value={effectiveTime} onChange={(e) => setPickupTime(e.target.value)} className={inputClass}>
                         {selectedDay?.slots.map((t) => (
                           <option key={t} value={t}>
-                            {t}
+                            {formatTime(t)}
                           </option>
                         ))}
                       </select>

@@ -31,7 +31,8 @@ export function isOpenNow(date: Date = new Date()): boolean {
   );
 }
 
-function formatTime(hhmm: string): string {
+/** "18:30" -> "6:30 PM" */
+export function formatTime(hhmm: string): string {
   const [h, m] = hhmm.split(":").map(Number);
   const period = h >= 12 ? "PM" : "AM";
   const hour12 = h % 12 === 0 ? 12 : h % 12;
@@ -80,7 +81,7 @@ function addDays(ymd: string, days: number): string {
 }
 
 /**
- * Every 15-minute pickup time (24-hour "HH:MM") the cafe is open for, today
+ * Every 15-minute pickup time ("HH:MM", shown to customers as AM/PM) the cafe is open for, today
  * and tomorrow. Today skips anything sooner than MIN_LEAD_MINUTES from now;
  * the last slot of a day is 15 minutes before closing.
  */
@@ -141,7 +142,7 @@ export function resolvePickupSlot(slot: string, now: Date = new Date()): string 
   return pacificToISO(date, time);
 }
 
-/** "Wed, Oct 1, 2026 · 14:32" in Pacific time, 24-hour clock. */
+/** "Wed, Oct 1, 2026 · 2:32 PM" in Pacific time. */
 export function formatOrderStamp(iso: string): string {
   const d = new Date(iso);
   const date = d.toLocaleDateString("en-US", {
@@ -154,17 +155,16 @@ export function formatOrderStamp(iso: string): string {
   return `${date} · ${formatClock(iso)}`;
 }
 
-/** "14:32" in Pacific time. */
+/** "2:32 PM" in Pacific time. */
 export function formatClock(iso: string): string {
   return new Date(iso).toLocaleTimeString("en-US", {
     timeZone: TIMEZONE,
-    hour: "2-digit",
+    hour: "numeric",
     minute: "2-digit",
-    hourCycle: "h23",
   });
 }
 
-/** "Today 14:30" / "Tomorrow 08:15" / "Fri, Oct 3 09:00" relative to now, Pacific. */
+/** "Today 2:30 PM" / "Tomorrow 8:15 AM" / "Fri, Oct 3 9:00 AM" relative to now, Pacific. */
 export function formatPickupTime(iso: string, now: Date = new Date()): string {
   const d = new Date(iso);
   const dayDiff = Math.round(
