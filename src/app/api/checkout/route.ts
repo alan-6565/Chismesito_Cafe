@@ -4,6 +4,8 @@ import { stripe } from "@/lib/stripe";
 import { priceCartLines, type CartLine } from "@/lib/pricing";
 import { isOpenNow, resolvePickupSlot } from "@/lib/hours";
 
+const CHECKOUT_EXPIRY_SECONDS = 30 * 60;
+
 type CartPayload = {
   customerName: string;
   customerPhone?: string;
@@ -86,6 +88,9 @@ export async function POST(req: NextRequest) {
     success_url: `${origin}/order/confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/checkout`,
     metadata: { orderId: order.id },
+    // Stripe's minimum. An abandoned checkout expires quickly so its
+    // pending order can be auto-cancelled (see /api/admin/orders).
+    expires_at: Math.floor(Date.now() / 1000) + CHECKOUT_EXPIRY_SECONDS,
   });
 
   await supabaseAdmin.from("orders").update({ stripe_session_id: session.id }).eq("id", order.id);

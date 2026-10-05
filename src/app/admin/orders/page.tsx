@@ -359,6 +359,7 @@ function OrderCard({
   const [notes, setNotes] = useState(order.staff_notes ?? "");
   const [savedNotes, setSavedNotes] = useState(order.staff_notes ?? "");
   const [savingNotes, setSavingNotes] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   const saveNotes = async () => {
     setSavingNotes(true);
@@ -464,13 +465,6 @@ function OrderCard({
               >
                 <CheckIcon className="w-4 h-4" /> {updating ? "..." : "Accept Order"}
               </button>
-              <button
-                onClick={() => onAdvance(order.id, "cancelled")}
-                disabled={updating}
-                className={`${primary} bg-cream-alt text-maroon hover:bg-red-50 hover:text-red-700`}
-              >
-                <XIcon className="w-4 h-4" /> Cancel Order
-              </button>
             </>
           )}
           {status === "preparing" && (
@@ -489,6 +483,21 @@ function OrderCard({
               className={`${primary} bg-emerald-600 hover:bg-emerald-700 text-white`}
             >
               <CheckIcon className="w-4 h-4" /> {updating ? "..." : collectAtPickup ? "Paid & Picked Up" : "Picked Up"}
+            </button>
+          )}
+          {isOpen && (
+            // Two taps so a stray tap can't cancel a real order. Available at
+            // every stage — e.g. a Ready order the customer never picks up.
+            <button
+              onClick={() => (confirmCancel ? onAdvance(order.id, "cancelled") : setConfirmCancel(true))}
+              onBlur={() => setConfirmCancel(false)}
+              disabled={updating}
+              className={`${primary} ${
+                confirmCancel ? "bg-red-600 hover:bg-red-700 text-white" : "bg-cream-alt text-maroon hover:bg-red-50 hover:text-red-700"
+              }`}
+            >
+              <XIcon className="w-4 h-4" />{" "}
+              {confirmCancel ? "Tap again to cancel" : status === "ready" ? "Not Picked Up — Cancel" : "Cancel Order"}
             </button>
           )}
 

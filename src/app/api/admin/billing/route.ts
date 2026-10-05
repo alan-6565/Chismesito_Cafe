@@ -7,9 +7,10 @@ type MonthSummary = { month: string; itemCount: number; orderCount: number; amou
 type LineItem = { month: string; createdAt: string; name: string; quantity: number };
 
 /**
- * "Sold" = money actually changed hands (paid online) or the customer
- * actually picked it up (fulfillment completed). Excludes pending/
- * cancelled/abandoned orders — those never became a real sale. Shared by
+ * "Sold" = money actually changed hands (paid online) or a pay-at-pickup
+ * order was actually picked up (fulfillment completed). Excludes pending/
+ * cancelled/abandoned orders — those never became a real sale, including
+ * an unpaid online checkout that staff mistakenly marked completed. Shared by
  * GET (to render the dashboard) and POST (to snapshot a month's amount at
  * the moment it's marked paid) so the two can never disagree.
  */
@@ -17,7 +18,7 @@ async function getMonthlySummaries(): Promise<{ months: MonthSummary[]; lineItem
   const { data: orders, error: ordersError } = await supabaseAdmin
     .from("orders")
     .select("id, created_at, payment_status, fulfillment_status")
-    .or("payment_status.eq.paid,fulfillment_status.eq.completed");
+    .or("payment_status.eq.paid,and(payment_method.eq.pickup,fulfillment_status.eq.completed)");
 
   if (ordersError || !orders) return null;
 
