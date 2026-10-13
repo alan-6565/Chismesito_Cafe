@@ -184,9 +184,8 @@ as $$
 $$;
 revoke execute on function adjust_gift_card_balance(uuid, integer) from public, anon, authenticated;
 
--- Monthly giveaway. Every order is an entry, capped at one per person (email)
--- per day — and the free form also allows one a day, so anyone can match a
--- daily customer's odds without buying anything.
+-- Monthly giveaway. Each person gets one free entry per month, and every
+-- paid online order (with the giveaway box checked) adds another entry.
 create table if not exists giveaway_entries (
   id uuid primary key default gen_random_uuid(),
   month text not null, -- "2026-10", Pacific time
@@ -205,7 +204,9 @@ alter table giveaway_entries add column if not exists entry_date date;
 update giveaway_entries set entry_date = (created_at at time zone 'America/Los_Angeles')::date where entry_date is null;
 alter table giveaway_entries alter column entry_date set not null;
 alter table giveaway_entries drop constraint if exists giveaway_entries_month_email_normalized_key;
-create unique index if not exists giveaway_entries_day_email_idx on giveaway_entries (entry_date, email_normalized);
+drop index if exists giveaway_entries_day_email_idx;
+create unique index if not exists giveaway_entries_free_once_idx on giveaway_entries (month, email_normalized) where source = 'free';
+create unique index if not exists giveaway_entries_order_idx on giveaway_entries (order_id) where order_id is not null;
 
 create index if not exists gift_card_redemptions_card_idx on gift_card_redemptions (gift_card_id);
 create index if not exists giveaway_entries_month_idx on giveaway_entries (month);

@@ -253,7 +253,7 @@ export default function CheckoutPage() {
             <div className="flex-1">
               <h2 className="font-display font-semibold text-lg text-maroon">Enter our monthly giveaway?</h2>
               <p className="mt-1 text-sm text-ink/60">
-                Win 2 free drinks (any size) or a $15 digital gift card. Winners are picked at the start of every
+                One winner gets 2 free drinks (any size) plus a $15 digital gift card, picked at the start of every
                 month.
               </p>
               <label className="mt-4 flex items-center gap-3 cursor-pointer">
@@ -277,7 +277,7 @@ export default function CheckoutPage() {
                 <Link href="/#giveaway" target="_blank" className="underline hover:text-rose">
                   enter for free
                 </Link>
-                . One entry per order, up to one a day.{" "}
+                . Every order adds an entry.{" "}
                 <Link href="/giveaway/rules" target="_blank" className="underline hover:text-rose">
                   Official rules
                 </Link>

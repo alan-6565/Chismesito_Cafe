@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { addGiveawayEntry } from "@/lib/orders";
 import { isValidEmail } from "@/lib/giveaway";
 
-/** Free entry — no purchase necessary. One entry per email per day. */
+/** Free entry — no purchase necessary. One free entry per email per month. */
 export async function POST(req: NextRequest) {
   const { name, email, phone, agree, website } = (await req.json()) as {
     name?: string;

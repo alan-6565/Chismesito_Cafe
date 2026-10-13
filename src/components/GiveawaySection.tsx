@@ -11,8 +11,8 @@ export default function GiveawaySection({ drinkImage }: { drinkImage: string | n
 
   const steps = [
     { Icon: CupIcon, title: "Order online", text: "Check the giveaway box at checkout — or enter for free." },
-    { Icon: TicketIcon, title: "Every order = 1 entry", text: "Up to one a day. More entries, more chances." },
-    { Icon: TrophyIcon, title: `${GIVEAWAY_PRIZES.length} winners`, text: `Picked ${drawnOn} and emailed their prize.` },
+    { Icon: TicketIcon, title: "Every order = 1 more entry", text: "Your free entry plus one for every order. More entries, more chances." },
+    { Icon: TrophyIcon, title: "1 lucky winner", text: `Picked ${drawnOn} — wins everything below.` },
   ];
 
   return (
@@ -36,7 +36,7 @@ export default function GiveawaySection({ drinkImage }: { drinkImage: string | n
             </p>
             <div className="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
               <span className="rounded-full bg-cream/15 border border-cream/30 px-3 py-1">Enter by {endsOn}</span>
-              <span className="rounded-full bg-cream/15 border border-cream/30 px-3 py-1">Winners {drawnOn}</span>
+              <span className="rounded-full bg-cream/15 border border-cream/30 px-3 py-1">Winner picked {drawnOn}</span>
               <span className="rounded-full bg-cream/15 border border-cream/30 px-3 py-1">No purchase necessary</span>
             </div>
           </div>
@@ -61,7 +61,7 @@ export default function GiveawaySection({ drinkImage }: { drinkImage: string | n
                       <GiftCardArt label={`$${prize.value / 100}`} />
                     )}
                     <span className="absolute top-3 left-3 rounded-full bg-rose text-white text-[11px] font-bold uppercase tracking-wide px-3 py-1">
-                      Prize {i + 1}
+                      {i === 0 ? "You win" : "Plus"}
                     </span>
                   </div>
                   <div className="px-5 py-4">
@@ -106,7 +106,9 @@ export default function GiveawaySection({ drinkImage }: { drinkImage: string | n
           {/* Free entry */}
           <div className="rounded-2xl bg-white shadow-sm p-6">
             <h3 className="font-display font-semibold text-xl text-maroon">Enter for free</h3>
-            <p className="mt-1 mb-5 text-sm text-ink/60">No purchase needed — you can enter once a day.</p>
+            <p className="mt-1 mb-5 text-sm text-ink/60">
+              No purchase needed. One free entry per person each month — every online order adds another.
+            </p>
             <GiveawayEntryForm />
           </div>
         </div>

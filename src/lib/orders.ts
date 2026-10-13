@@ -6,7 +6,10 @@ import { notifyStaffOfNewOrder } from "./staff-notify";
 import { refundGiftCard } from "./gift-cards";
 import { giveawayDay, giveawayMonth, normalizeEmail } from "./giveaway";
 
-/** Adds an entry for today (Pacific). A person gets at most one entry a day. */
+/**
+ * Adds a giveaway entry. Each person gets one free entry per month; every
+ * paid order adds another (one per order).
+ */
 export async function addGiveawayEntry(entry: {
   date?: Date;
   name: string;
@@ -15,27 +18,23 @@ export async function addGiveawayEntry(entry: {
   source: "order" | "free";
   orderId?: string | null;
 }): Promise<"added" | "already-entered" | "error"> {
-  const { data, error } = await supabaseAdmin
-    .from("giveaway_entries")
-    .upsert(
-      {
-        month: giveawayMonth(entry.date),
-        entry_date: giveawayDay(entry.date),
-        name: entry.name.trim(),
-        email: entry.email.trim(),
-        email_normalized: normalizeEmail(entry.email),
-        phone: entry.phone?.trim() || null,
-        source: entry.source,
-        order_id: entry.orderId ?? null,
-      },
-      { onConflict: "entry_date,email_normalized", ignoreDuplicates: true }
-    )
-    .select("id");
+  const { error } = await supabaseAdmin.from("giveaway_entries").insert({
+    month: giveawayMonth(entry.date),
+    entry_date: giveawayDay(entry.date),
+    name: entry.name.trim(),
+    email: entry.email.trim(),
+    email_normalized: normalizeEmail(entry.email),
+    phone: entry.phone?.trim() || null,
+    source: entry.source,
+    order_id: entry.orderId ?? null,
+  });
+  // Unique indexes enforce one free entry per month and one entry per order.
+  if (error?.code === "23505") return "already-entered";
   if (error) {
     console.error("[giveaway] could not add entry:", error);
     return "error";
   }
-  return data?.length ? "added" : "already-entered";
+  return "added";
 }
 
 /**

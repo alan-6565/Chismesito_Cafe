@@ -11,8 +11,7 @@ export default function GiveawayRulesPage() {
       title: "No purchase necessary",
       body: (
         <>
-          No purchase or payment of any kind is necessary to enter or win. A purchase does not increase your chances
-          of winning. Void where prohibited.
+          No purchase or payment of any kind is necessary to enter or win. Void where prohibited.
         </>
       ),
     },
@@ -46,14 +45,13 @@ export default function GiveawayRulesPage() {
       title: "How to enter",
       body: (
         <>
-          There are two ways to enter, and both are equal: (1) fill out the free entry form on the{" "}
+          There are two ways to enter: (1) fill out the free entry form on the{" "}
           <Link href="/#giveaway" className="underline hover:text-rose">
             giveaway page
           </Link>
-          , or (2) check the giveaway box when placing an online order. Each online order or free entry form
-          counts as one entry, limited to one entry per person (per email address) per day, whichever way you
-          enter. Additional entries on the same day are ignored. You never need to buy anything to get the same
-          number of entries as someone who orders.
+          , or (2) check the giveaway box when placing an online order. Each person may submit one free entry per
+          month using the form. Each paid online order with the giveaway box checked adds one additional entry.
+          Entries are tracked by email address.
         </>
       ),
     },
@@ -61,8 +59,9 @@ export default function GiveawayRulesPage() {
       title: "Prizes",
       body: (
         <>
-          Each month, {GIVEAWAY_PRIZES.length} winners are drawn: {GIVEAWAY_PRIZES.map((p) => `one receives ${p.title} (${p.detail.toLowerCase()})`).join(" and ")}. Each
-          prize is delivered as a digital gift card code that can be used online at this website or in person at
+          Each month, one winner is drawn and receives{" "}
+          {GIVEAWAY_PRIZES.map((p) => `${p.title} (${p.detail.toLowerCase()})`).join(" and ")}. Each prize is
+          delivered as a digital gift card code that can be used online at this website or in person at
           the café. Prizes have no cash value, cannot be transferred or exchanged, and no substitution is allowed
           except by the Sponsor.
         </>
@@ -72,9 +71,9 @@ export default function GiveawayRulesPage() {
       title: "Drawing and odds",
       body: (
         <>
-          Winners are chosen at random from all eligible entries received during that month, on or about the 1st
-          of the following month. Each entry is one chance to win. A person can win only one prize per month. Odds
-          of winning depend on the number of eligible entries received.
+          The winner is chosen at random from all eligible entries received during that month, on or about the 1st
+          of the following month. Each entry is one chance to win. Odds of winning depend on the number of eligible
+          entries received.
         </>
       ),
     },
@@ -82,7 +81,7 @@ export default function GiveawayRulesPage() {
       title: "Winner notification",
       body: (
         <>
-          Winners are notified by email at the address they entered with. If a winner can&rsquo;t be reached or
+          The winner is notified by email at the address they entered with. If the winner can&rsquo;t be reached or
           doesn&rsquo;t respond within 30 days, the prize may be forfeited and an alternate winner drawn.
         </>
       ),
@@ -91,7 +90,7 @@ export default function GiveawayRulesPage() {
       title: "Privacy",
       body: (
         <>
-          Information you give us is used only to run this giveaway and contact winners. See our{" "}
+          Information you give us is used only to run this giveaway and contact the winner. See our{" "}
           <Link href="/privacy" className="underline hover:text-rose">
             privacy policy
           </Link>

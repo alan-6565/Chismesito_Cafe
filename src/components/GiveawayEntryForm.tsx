@@ -37,10 +37,10 @@ export default function GiveawayEntryForm() {
     return (
       <div className="rounded-2xl bg-blush-soft/60 border border-blush px-6 py-8 text-center">
         <p className="font-display font-bold text-xl text-maroon">
-          {result === "entered" ? "You're entered! 🎉" : "You're already entered today ♡"}
+          {result === "entered" ? "You're entered! 🎉" : "You've already used your free entry this month ♡"}
         </p>
         <p className="mt-1 text-sm text-ink/60">
-          Come back tomorrow for another entry. We&apos;ll email you if you win — good luck!
+          Every online order adds another entry. We&apos;ll email you if you win — good luck!
         </p>
       </div>
     );

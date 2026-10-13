@@ -13,15 +13,23 @@ type Entry = {
   created_at: string;
   prize: string | null;
   won_at: string | null;
-  gift_cards: { code: string } | { code: string }[] | null;
 };
 
-type GiveawayData = { month: string; currentMonth: string; months: string[]; entries: Entry[] };
+type PrizeCard = { code: string; kind: "amount" | "drinks"; initial_value: number; balance: number };
 
-const cardCode = (entry: Entry) => {
-  const card = Array.isArray(entry.gift_cards) ? entry.gift_cards[0] : entry.gift_cards;
-  return card ? `${card.code.slice(0, 4)}-${card.code.slice(4)}` : null;
+type GiveawayData = {
+  month: string;
+  currentMonth: string;
+  months: string[];
+  entries: Entry[];
+  prizeCards: PrizeCard[];
 };
+
+type Person = { name: string; email: string; phone: string | null; total: number; fromOrders: number };
+
+const formatCode = (code: string) => `${code.slice(0, 4)}-${code.slice(4)}`;
+const describe = (card: PrizeCard) =>
+  card.kind === "amount" ? `$${(card.initial_value / 100).toFixed(2)}` : `${card.initial_value} free drinks`;
 
 export default function AdminGiveawayPage() {
   const [month, setMonth] = useState<string | null>(null);
@@ -60,9 +68,18 @@ export default function AdminGiveawayPage() {
     }
   };
 
-  const winners = data?.entries.filter((e) => e.won_at) ?? [];
+  const winner = data?.entries.find((e) => e.won_at);
   const fromOrders = data?.entries.filter((e) => e.source === "order").length ?? 0;
-  const people = new Set(data?.entries.map((e) => e.email_normalized)).size;
+  // One row per person, with how many entries they have this month.
+  const people = new Map<string, Person>();
+  for (const e of data?.entries ?? []) {
+    const person = people.get(e.email_normalized) ?? { name: e.name, email: e.email, phone: e.phone, total: 0, fromOrders: 0 };
+    person.total++;
+    if (e.source === "order") person.fromOrders++;
+    person.phone ??= e.phone;
+    people.set(e.email_normalized, person);
+  }
+  const peopleList = [...people.values()].sort((a, b) => b.total - a.total);
 
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
@@ -70,7 +87,7 @@ export default function AdminGiveawayPage() {
         <div>
           <h1 className="font-display font-bold text-2xl text-maroon">Giveaway</h1>
           <p className="text-xs text-ink/50">
-            Every order = 1 entry (up to 1 a day per person) · winners get their prize by email
+            1 free entry per person · every online order adds another · the winner gets their prize by email
           </p>
         </div>
         {data && (
@@ -103,7 +120,7 @@ export default function AdminGiveawayPage() {
             </div>
             <div className="text-right text-sm text-cream/70">
               <p>
-                {people} {people === 1 ? "person" : "people"}
+                {people.size} {people.size === 1 ? "person" : "people"}
               </p>
               <p>{fromOrders} from orders</p>
               <p>{data.entries.length - fromOrders} free entries</p>
@@ -111,86 +128,75 @@ export default function AdminGiveawayPage() {
           </div>
 
           <section className="mt-6 rounded-2xl bg-white shadow-sm p-5">
-            <h2 className="font-display font-semibold text-lg text-maroon">Winners</h2>
-            {winners.length > 0 ? (
-              <div className="mt-3 flex flex-col gap-3">
-                {winners.map((w) => (
-                  <div key={w.id} className="rounded-xl border border-blush px-4 py-3 flex flex-wrap justify-between gap-2">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-wide text-rose">{w.prize}</p>
-                      <p className="font-semibold text-maroon">{w.name}</p>
-                      <p className="text-xs text-ink/50">
-                        {w.email}
-                        {w.phone && ` · ${w.phone}`}
-                      </p>
-                    </div>
-                    {cardCode(w) && (
-                      <div className="text-right">
-                        <p className="text-xs text-ink/50">Gift card</p>
-                        <p className="font-mono font-semibold text-maroon">{cardCode(w)}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
+            <h2 className="font-display font-semibold text-lg text-maroon">Winner</h2>
+            {winner ? (
+              <div className="mt-3 rounded-xl border border-blush px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-rose">{winner.prize}</p>
+                <p className="font-semibold text-maroon">{winner.name}</p>
                 <p className="text-xs text-ink/50">
-                  Their codes were emailed to them, and are listed under Gift Cards.
+                  {winner.email}
+                  {winner.phone && ` · ${winner.phone}`}
+                </p>
+                {data.prizeCards.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-blush flex flex-col gap-1">
+                    {data.prizeCards.map((card) => (
+                      <div key={card.code} className="flex justify-between text-sm">
+                        <span className="text-ink/60">{describe(card)}</span>
+                        <span className="font-mono font-semibold text-maroon">{formatCode(card.code)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-3 text-xs text-ink/50">
+                  The codes were emailed to them, and are listed under Gift Cards.
                 </p>
               </div>
             ) : (
               <div className="mt-2">
                 <p className="text-sm text-ink/60">
-                  Draws {GIVEAWAY_PRIZES.length} entries at random — one for each prize (one win per person) (
-                  {GIVEAWAY_PRIZES.map((p) => p.title).join(", ")}) — and emails each their gift card code.
+                  Draws 1 entry at random — more entries means better odds — and emails that person their prize (
+                  {GIVEAWAY_PRIZES.map((p) => p.title).join(" + ")}) as gift card codes.
                 </p>
                 {data.month === data.currentMonth && (
                   <p className="mt-2 text-sm text-amber-700">
-                    This month is still running — winners are normally picked on the 1st of next month.
+                    This month is still running — the winner is normally picked on the 1st of next month.
                   </p>
                 )}
                 {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
                 <button
                   onClick={() => (confirmDraw ? draw() : setConfirmDraw(true))}
-                  disabled={drawing || people < GIVEAWAY_PRIZES.length}
+                  disabled={drawing || data.entries.length === 0}
                   className={`mt-4 rounded-xl font-semibold px-5 py-2.5 text-sm disabled:opacity-40 transition-colors ${
                     confirmDraw ? "bg-rose hover:bg-rose-dark text-white" : "bg-maroon text-cream"
                   }`}
                 >
-                  {drawing ? "Picking..." : confirmDraw ? "Tap again to pick & email winners" : "Pick Winners"}
+                  {drawing ? "Picking..." : confirmDraw ? "Tap again to pick & email the winner" : "Pick Winner"}
                 </button>
-                {people < GIVEAWAY_PRIZES.length && (
-                  <p className="mt-2 text-xs text-ink/50">
-                    Needs at least {GIVEAWAY_PRIZES.length} different people entered.
-                  </p>
-                )}
               </div>
             )}
           </section>
 
           <h2 className="mt-8 mb-3 font-display font-semibold text-lg text-maroon">Entries</h2>
-          {data.entries.length === 0 ? (
+          {peopleList.length === 0 ? (
             <p className="text-center text-ink/50 py-10">No entries yet this month.</p>
           ) : (
             <div className="rounded-2xl bg-white shadow-sm divide-y divide-blush">
-              {data.entries.map((e) => (
-                <div key={e.id} className="px-5 py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
+              {peopleList.map((p) => (
+                <div key={p.email} className="px-5 py-3 flex flex-wrap items-center justify-between gap-2 text-sm">
                   <div>
-                    <p className="text-ink/80 font-medium">{e.name}</p>
+                    <p className="text-ink/80 font-medium">{p.name}</p>
                     <p className="text-xs text-ink/40">
-                      {e.email}
-                      {e.phone && ` · ${e.phone}`}
+                      {p.email}
+                      {p.phone && ` · ${p.phone}`}
                     </p>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span
-                      className={`rounded-full text-[11px] font-semibold px-2.5 py-0.5 ${
-                        e.source === "order" ? "bg-blush-soft text-rose" : "bg-ink/5 text-ink/60"
-                      }`}
-                    >
-                      {e.source === "order" ? "Order" : "Free entry"}
-                    </span>
-                    <span className="text-xs text-ink/40">
-                      {new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                    </span>
+                  <div className="text-right">
+                    <p className="font-semibold text-maroon">
+                      {p.total} {p.total === 1 ? "entry" : "entries"}
+                    </p>
+                    <p className="text-xs text-ink/40">
+                      {p.fromOrders} from orders{p.total > p.fromOrders ? " · 1 free" : ""}
+                    </p>
                   </div>
                 </div>
               ))}

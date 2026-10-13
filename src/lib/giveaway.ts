@@ -1,7 +1,7 @@
 import type { GiftCardKind } from "./gift-cards";
 
-// One winner per prize, drawn from that month's entries. Change these to
-// change what's being given away (each winner gets a gift card for it).
+// One winner a month, drawn from that month's entries, wins all of these.
+// Change these to change what's being given away (each becomes a gift card).
 export const GIVEAWAY_PRIZES: { title: string; detail: string; kind: GiftCardKind; value: number }[] = [
   { title: "2 Free Drinks", detail: "Any size, any flavor", kind: "drinks", value: 2 },
   { title: "$15 Digital Gift Card", detail: "Use it online or in the café", kind: "amount", value: 1500 },
