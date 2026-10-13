@@ -253,3 +253,46 @@ export function CashIcon({ className = "w-4 h-4" }: IconProps) {
     </svg>
   );
 }
+
+export function GiftIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <rect x="3.5" y="8" width="17" height="4.5" rx="1" stroke="currentColor" strokeWidth="1.7" />
+      <path d="M5 12.5V20h14v-7.5M12 8v12" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path
+        d="M12 8C10.5 5 7.5 4.5 7 6.3 6.6 7.8 9 8 12 8Zm0 0c1.5-3 4.5-3.5 5-1.7.4 1.5-2 1.7-5 1.7Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function TrophyIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0V4ZM7.5 6H4.5c0 3 1.3 4.5 3.4 4.8M16.5 6h3c0 3-1.3 4.5-3.4 4.8M12 13.5V17M8.5 20h7M9.5 17h5v3h-5z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function TicketIcon({ className = "w-6 h-6" }: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" className={className}>
+      <path
+        d="M3.5 7.5A1.5 1.5 0 0 1 5 6h14a1.5 1.5 0 0 1 1.5 1.5v2.2a2.3 2.3 0 0 0 0 4.6v2.2A1.5 1.5 0 0 1 19 18H5a1.5 1.5 0 0 1-1.5-1.5v-2.2a2.3 2.3 0 0 0 0-4.6V7.5Z"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinejoin="round"
+      />
+      <path d="M14.5 6v12" stroke="currentColor" strokeWidth="1.7" strokeDasharray="2 2" />
+    </svg>
+  );
+}

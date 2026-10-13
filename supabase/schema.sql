@@ -137,3 +137,79 @@ alter table menu_item_modifier_groups enable row level security;
 alter table orders enable row level security;
 alter table order_items enable row level security;
 alter table billing_payments enable row level security;
+
+-- Gift cards. kind 'amount' stores balance in cents; kind 'drinks' stores it
+-- as a count of free drinks (any size). Codes are stored without dashes.
+create table if not exists gift_cards (
+  id uuid primary key default gen_random_uuid(),
+  code text unique not null,
+  kind text not null check (kind in ('amount', 'drinks')),
+  initial_value integer not null check (initial_value > 0),
+  balance integer not null check (balance >= 0),
+  recipient_name text,
+  recipient_email text,
+  note text,
+  created_at timestamptz not null default now(),
+  emailed_at timestamptz
+);
+
+-- Every use of a card. amount is in the card's own units (cents or drinks);
+-- positive = used, negative = given back (an abandoned online checkout).
+create table if not exists gift_card_redemptions (
+  id uuid primary key default gen_random_uuid(),
+  gift_card_id uuid not null references gift_cards(id) on delete cascade,
+  order_id uuid references orders(id) on delete set null,
+  amount integer not null,
+  source text not null check (source in ('online', 'in_store', 'refund')),
+  created_at timestamptz not null default now()
+);
+
+alter table orders add column if not exists gift_card_id uuid references gift_cards(id) on delete set null;
+-- Dollar value the card took off this order (total_cents stays the full price).
+alter table orders add column if not exists gift_card_cents integer not null default 0;
+-- Same deduction in the card's own units, so it can be given back exactly.
+alter table orders add column if not exists gift_card_units integer not null default 0;
+alter table orders add column if not exists giveaway_opt_in boolean not null default false;
+
+-- Atomic balance change: returns the new balance, or null if it would go
+-- negative — two checkouts racing on one card can't both spend it.
+create or replace function adjust_gift_card_balance(card_id uuid, delta integer)
+returns integer
+language sql
+as $$
+  update gift_cards
+  set balance = balance + delta
+  where id = card_id and balance + delta >= 0 and balance + delta <= initial_value
+  returning balance;
+$$;
+revoke execute on function adjust_gift_card_balance(uuid, integer) from public, anon, authenticated;
+
+-- Monthly giveaway. Every order is an entry, capped at one per person (email)
+-- per day — and the free form also allows one a day, so anyone can match a
+-- daily customer's odds without buying anything.
+create table if not exists giveaway_entries (
+  id uuid primary key default gen_random_uuid(),
+  month text not null, -- "2026-10", Pacific time
+  name text not null,
+  email text not null,
+  email_normalized text not null,
+  phone text,
+  source text not null check (source in ('order', 'free')),
+  order_id uuid references orders(id) on delete set null,
+  created_at timestamptz not null default now(),
+  prize text,
+  gift_card_id uuid references gift_cards(id) on delete set null,
+  won_at timestamptz
+);
+alter table giveaway_entries add column if not exists entry_date date;
+update giveaway_entries set entry_date = (created_at at time zone 'America/Los_Angeles')::date where entry_date is null;
+alter table giveaway_entries alter column entry_date set not null;
+alter table giveaway_entries drop constraint if exists giveaway_entries_month_email_normalized_key;
+create unique index if not exists giveaway_entries_day_email_idx on giveaway_entries (entry_date, email_normalized);
+
+create index if not exists gift_card_redemptions_card_idx on gift_card_redemptions (gift_card_id);
+create index if not exists giveaway_entries_month_idx on giveaway_entries (month);
+
+alter table gift_cards enable row level security;
+alter table gift_card_redemptions enable row level security;
+alter table giveaway_entries enable row level security;

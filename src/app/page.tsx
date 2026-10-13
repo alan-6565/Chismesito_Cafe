@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import PromoCarousel from "@/components/PromoCarousel";
+import GiveawaySection from "@/components/GiveawaySection";
 import { CupIcon, LeafIcon, HeartIcon, PinIcon, InstagramIcon } from "@/components/icons";
 import { promotion, promoSlides, business } from "@/lib/data";
 import { getMenu } from "@/lib/menu";
@@ -51,6 +52,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <GiveawaySection drinkImage={items.find((i) => i.featured && i.imageUrl)?.imageUrl ?? null} />
 
       {/* Trending */}
       <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">

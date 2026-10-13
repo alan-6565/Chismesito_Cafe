@@ -20,7 +20,7 @@ export async function notifyStaffOfNewOrder(orderId: string): Promise<void> {
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, payment_method, total_cents, pickup_at, staff_notified_at")
+    .select("id, created_at, customer_name, payment_method, total_cents, gift_card_cents, pickup_at, staff_notified_at")
     .eq("id", orderId)
     .single();
 
@@ -31,7 +31,12 @@ export async function notifyStaffOfNewOrder(orderId: string): Promise<void> {
     .select("id", { count: "exact", head: true })
     .eq("order_id", orderId);
 
-  const payLine = order.payment_method === "online" ? "Paid online" : "Pay at pickup";
+  const payLine =
+    order.payment_method !== "online"
+      ? "Pay at pickup"
+      : order.gift_card_cents > 0
+        ? `Paid online (${formatCents(order.gift_card_cents)} by gift card)`
+        : "Paid online";
   const pickupLine = order.pickup_at ? formatPickupTime(order.pickup_at) : "ASAP";
 
   const { error } = await resend.emails.send({

@@ -1,12 +1,14 @@
-import { after, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
-import { sendOrderConfirmationEmail } from "@/lib/email";
-import { notifyStaffOfNewOrder } from "@/lib/staff-notify";
+import { cancelUnpaidOrder, markOrderPaid } from "@/lib/orders";
 
 // Stripe Checkout sessions can't live longer than 24h, so anything older
 // that's still pending can never be paid — no need to ask Stripe.
 const MAX_SESSION_LIFETIME_MS = 24 * 60 * 60 * 1000;
+// An order is saved a moment before its Stripe session exists — don't
+// mistake one caught in that gap for an abandoned checkout.
+const SESSION_GRACE_MS = 5 * 60 * 1000;
 
 /**
  * Online orders are saved as "pending" before the customer reaches Stripe.
@@ -25,24 +27,18 @@ async function syncPendingOnlinePayments() {
 
   await Promise.all(
     (pending ?? []).map(async (order) => {
-      const cancel = () => supabaseAdmin.from("orders").update({ fulfillment_status: "cancelled" }).eq("id", order.id);
-
-      if (!order.stripe_session_id || Date.now() - new Date(order.created_at).getTime() > MAX_SESSION_LIFETIME_MS) {
-        await cancel();
+      const age = Date.now() - new Date(order.created_at).getTime();
+      if (age > MAX_SESSION_LIFETIME_MS || (!order.stripe_session_id && age > SESSION_GRACE_MS)) {
+        await cancelUnpaidOrder(order.id);
         return;
       }
+      if (!order.stripe_session_id) return;
       try {
         const session = await stripe.checkout.sessions.retrieve(order.stripe_session_id);
         if (session.payment_status === "paid") {
-          const stripeEmail = session.customer_details?.email;
-          await supabaseAdmin
-            .from("orders")
-            .update({ payment_status: "paid", ...(stripeEmail ? { customer_email: stripeEmail } : {}) })
-            .eq("id", order.id);
-          after(() => sendOrderConfirmationEmail(order.id));
-          after(() => notifyStaffOfNewOrder(order.id));
+          await markOrderPaid(order.id, session.customer_details?.email);
         } else if (session.status === "expired") {
-          await cancel();
+          await cancelUnpaidOrder(order.id);
         }
       } catch (err) {
         console.error(`[orders] could not check Stripe for order ${order.id}:`, err);
@@ -56,7 +52,7 @@ export async function GET() {
 
   const { data: orders, error: ordersError } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, customer_phone, payment_method, payment_status, fulfillment_status, total_cents, staff_notes, pickup_at")
+    .select("id, created_at, customer_name, customer_phone, payment_method, payment_status, fulfillment_status, total_cents, staff_notes, pickup_at, gift_card_cents")
     // An online order that was never paid is an abandoned checkout, not a
     // real order — showing it made staff think customers ordered twice.
     .or("payment_method.eq.pickup,payment_status.eq.paid")

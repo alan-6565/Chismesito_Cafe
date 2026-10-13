@@ -1,0 +1,83 @@
+import "server-only";
+import { after } from "next/server";
+import { supabaseAdmin } from "./supabase";
+import { sendOrderConfirmationEmail } from "./email";
+import { notifyStaffOfNewOrder } from "./staff-notify";
+import { refundGiftCard } from "./gift-cards";
+import { giveawayDay, giveawayMonth, normalizeEmail } from "./giveaway";
+
+/** Adds an entry for today (Pacific). A person gets at most one entry a day. */
+export async function addGiveawayEntry(entry: {
+  date?: Date;
+  name: string;
+  email: string;
+  phone?: string | null;
+  source: "order" | "free";
+  orderId?: string | null;
+}): Promise<"added" | "already-entered" | "error"> {
+  const { data, error } = await supabaseAdmin
+    .from("giveaway_entries")
+    .upsert(
+      {
+        month: giveawayMonth(entry.date),
+        entry_date: giveawayDay(entry.date),
+        name: entry.name.trim(),
+        email: entry.email.trim(),
+        email_normalized: normalizeEmail(entry.email),
+        phone: entry.phone?.trim() || null,
+        source: entry.source,
+        order_id: entry.orderId ?? null,
+      },
+      { onConflict: "entry_date,email_normalized", ignoreDuplicates: true }
+    )
+    .select("id");
+  if (error) {
+    console.error("[giveaway] could not add entry:", error);
+    return "error";
+  }
+  return data?.length ? "added" : "already-entered";
+}
+
+/**
+ * The one place an order becomes paid — called by the Stripe webhook, the
+ * confirmation page, the admin sync, and gift-card-only checkouts. Only the
+ * call that actually flips it runs the follow-ups, so nothing is sent twice.
+ */
+export async function markOrderPaid(orderId: string, stripeEmail?: string | null): Promise<boolean> {
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .update({ payment_status: "paid", ...(stripeEmail ? { customer_email: stripeEmail } : {}) })
+    .eq("id", orderId)
+    .neq("payment_status", "paid")
+    .select("id, created_at, customer_name, customer_email, customer_phone, giveaway_opt_in");
+  if (error) throw error;
+
+  const order = data?.[0];
+  if (!order) return false;
+
+  after(() => sendOrderConfirmationEmail(order.id));
+  after(() => notifyStaffOfNewOrder(order.id));
+  if (order.giveaway_opt_in && order.customer_email) {
+    await addGiveawayEntry({
+      date: new Date(order.created_at),
+      name: order.customer_name,
+      email: order.customer_email,
+      phone: order.customer_phone,
+      source: "order",
+      orderId: order.id,
+    });
+  }
+  return true;
+}
+
+/** Cancels an order that was never paid and gives back any gift card balance it held. */
+export async function cancelUnpaidOrder(orderId: string): Promise<void> {
+  const { data } = await supabaseAdmin
+    .from("orders")
+    .update({ fulfillment_status: "cancelled" })
+    .eq("id", orderId)
+    .neq("payment_status", "paid")
+    .neq("fulfillment_status", "cancelled")
+    .select("id, gift_card_id, gift_card_units");
+  if (data?.[0]) await refundGiftCard(data[0]);
+}

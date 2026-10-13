@@ -1,9 +1,8 @@
-import { after, NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase";
-import { sendOrderConfirmationEmail } from "@/lib/email";
-import { notifyStaffOfNewOrder } from "@/lib/staff-notify";
+import { markOrderPaid } from "@/lib/orders";
 
 export async function POST(req: NextRequest) {
   const signature = req.headers.get("stripe-signature");
@@ -23,23 +22,18 @@ export async function POST(req: NextRequest) {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const orderId = session.metadata?.orderId;
-    const stripeEmail = session.customer_details?.email;
-
-    const { data: order, error } = await supabaseAdmin
-      .from("orders")
-      .update({ payment_status: "paid", ...(stripeEmail ? { customer_email: stripeEmail } : {}) })
-      .eq(orderId ? "id" : "stripe_session_id", orderId ?? session.id)
-      .select("id")
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: "Could not update order" }, { status: 500 });
+    let orderId = session.metadata?.orderId;
+    if (!orderId) {
+      const { data } = await supabaseAdmin.from("orders").select("id").eq("stripe_session_id", session.id).maybeSingle();
+      orderId = data?.id;
     }
 
-    if (order) {
-      after(() => sendOrderConfirmationEmail(order.id));
-      after(() => notifyStaffOfNewOrder(order.id));
+    if (orderId) {
+      try {
+        await markOrderPaid(orderId, session.customer_details?.email);
+      } catch {
+        return NextResponse.json({ error: "Could not update order" }, { status: 500 });
+      }
     }
   }
 

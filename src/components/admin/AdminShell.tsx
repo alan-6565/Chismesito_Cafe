@@ -4,7 +4,7 @@ import { createContext, ReactNode, useContext, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { CupIcon, GridIcon, ReceiptIcon, LogoutIcon } from "@/components/icons";
+import { CupIcon, GridIcon, ReceiptIcon, LogoutIcon, StoreIcon, GiftIcon, TicketIcon } from "@/components/icons";
 
 // Lets the Orders page push its "new orders" count up to the sidebar badge.
 const NewOrderCountContext = createContext<(count: number) => void>(() => {});
@@ -13,6 +13,8 @@ export const useSetNewOrderCount = () => useContext(NewOrderCountContext);
 const NAV = [
   { href: "/admin/orders", label: "Orders", Icon: GridIcon },
   { href: "/admin/menu", label: "Menu", Icon: CupIcon },
+  { href: "/admin/gift-cards", label: "Gift Cards", Icon: GiftIcon },
+  { href: "/admin/giveaway", label: "Giveaway", Icon: TicketIcon },
   { href: "/admin/billing", label: "Billing", Icon: ReceiptIcon },
 ];
 
@@ -64,9 +66,18 @@ export default function AdminShell({ children }: { children: ReactNode }) {
               })}
             </nav>
 
+            <a
+              href="/"
+              target="_blank"
+              rel="noreferrer"
+              className="shrink-0 ml-auto lg:ml-0 lg:mt-auto flex items-center gap-3 rounded-xl px-3 lg:px-4 py-2 lg:py-3 text-sm font-medium text-ink/60 hover:text-rose hover:bg-blush-soft transition-colors"
+            >
+              <StoreIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">View Website</span>
+            </a>
             <button
               onClick={logout}
-              className="shrink-0 ml-auto lg:ml-0 lg:mt-auto flex items-center gap-3 rounded-xl px-3 lg:px-4 py-2 lg:py-3 text-sm font-medium text-ink/60 hover:text-rose hover:bg-blush-soft transition-colors"
+              className="shrink-0 flex items-center gap-3 rounded-xl px-3 lg:px-4 py-2 lg:py-3 text-sm font-medium text-ink/60 hover:text-rose hover:bg-blush-soft transition-colors"
             >
               <LogoutIcon className="w-5 h-5" />
               Log out

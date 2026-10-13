@@ -6,6 +6,9 @@ import OrderPanel from "@/components/OrderPanel";
 import { useCart } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
 import { formatTime, getPickupSlots, isOpenNow, type PickupDay } from "@/lib/hours";
+import { GiftIcon } from "@/components/icons";
+
+type AppliedGiftCard = { code: string; discountCents: number; balanceLabel: string; cartKey: string };
 
 export default function CheckoutPage() {
   const { items, totalCents } = useCart();
@@ -21,6 +24,11 @@ export default function CheckoutPage() {
   const [pickupMode, setPickupMode] = useState<"asap" | "scheduled">("asap");
   const [pickupDate, setPickupDate] = useState("");
   const [pickupTime, setPickupTime] = useState("");
+  const [giftCodeInput, setGiftCodeInput] = useState("");
+  const [giftCard, setGiftCard] = useState<AppliedGiftCard | null>(null);
+  const [giftError, setGiftError] = useState<string | null>(null);
+  const [applyingGift, setApplyingGift] = useState(false);
+  const [giveawayOptIn, setGiveawayOptIn] = useState(true);
 
   useEffect(() => {
     const update = () => {
@@ -39,19 +47,49 @@ export default function CheckoutPage() {
   const effectiveTime = selectedDay?.slots.includes(pickupTime) ? pickupTime : (selectedDay?.slots[0] ?? "");
   const effectiveMode = openNow ? pickupMode : "scheduled";
 
+  const cartLines = items.map((i) => ({
+    menuItemId: i.menuItemId,
+    sizeId: i.sizeId,
+    optionIds: i.modifiers.map((m) => m.optionId),
+    quantity: i.quantity,
+    notes: i.notes,
+  }));
+  // A gift card's discount depends on the cart, so editing the cart after
+  // applying one means it has to be applied again.
+  const cartKey = JSON.stringify(cartLines);
+  const appliedGift = giftCard?.cartKey === cartKey ? giftCard : null;
+  const amountDueCents = totalCents - (appliedGift?.discountCents ?? 0);
+
   const cartPayload = () => ({
     customerName: name,
     customerPhone: phone,
     customerEmail: email,
     pickupSlot: effectiveMode === "scheduled" ? `${effectiveDate}T${effectiveTime}` : undefined,
-    items: items.map((i) => ({
-      menuItemId: i.menuItemId,
-      sizeId: i.sizeId,
-      optionIds: i.modifiers.map((m) => m.optionId),
-      quantity: i.quantity,
-      notes: i.notes,
-    })),
+    giftCardCode: appliedGift?.code,
+    giveawayOptIn,
+    items: cartLines,
   });
+
+  const applyGiftCard = async () => {
+    if (!giftCodeInput.trim()) return;
+    setApplyingGift(true);
+    setGiftError(null);
+    try {
+      const res = await fetch("/api/gift-cards/quote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: giftCodeInput, items: cartLines }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Could not check that code");
+      setGiftCard({ ...data, cartKey });
+      setGiftCodeInput("");
+    } catch (err) {
+      setGiftError(err instanceof Error ? err.message : "Could not check that code");
+    } finally {
+      setApplyingGift(false);
+    }
+  };
 
   const submitOnlinePayment = async () => {
     if (!name.trim()) {
@@ -210,8 +248,106 @@ export default function CheckoutPage() {
             )}
           </div>
 
+          <div className="mt-6 rounded-3xl bg-blush-soft/60 border border-blush p-6 flex gap-4">
+            <GiftIcon className="w-8 h-8 shrink-0 text-rose" />
+            <div className="flex-1">
+              <h2 className="font-display font-semibold text-lg text-maroon">Enter our monthly giveaway?</h2>
+              <p className="mt-1 text-sm text-ink/60">
+                Win 2 free drinks (any size) or a $15 digital gift card. Winners are picked at the start of every
+                month.
+              </p>
+              <label className="mt-4 flex items-center gap-3 cursor-pointer">
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={giveawayOptIn}
+                  onClick={() => setGiveawayOptIn((v) => !v)}
+                  className={`relative w-11 h-6 shrink-0 rounded-full transition-colors ${giveawayOptIn ? "bg-rose" : "bg-ink/20"}`}
+                >
+                  <span
+                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
+                      giveawayOptIn ? "translate-x-5" : ""
+                    }`}
+                  />
+                </button>
+                <span className="text-sm font-medium text-maroon">Yes, enter me in this month&apos;s giveaway</span>
+              </label>
+              <p className="mt-3 text-xs text-ink/50">
+                No purchase necessary — anyone can{" "}
+                <Link href="/#giveaway" target="_blank" className="underline hover:text-rose">
+                  enter for free
+                </Link>
+                . One entry per order, up to one a day.{" "}
+                <Link href="/giveaway/rules" target="_blank" className="underline hover:text-rose">
+                  Official rules
+                </Link>
+                .
+              </p>
+            </div>
+          </div>
+
           <div className="mt-6 rounded-3xl bg-white shadow-sm border border-blush/40 p-6 flex flex-col gap-3">
             <h2 className="font-display font-semibold text-lg text-maroon">Payment</h2>
+
+            {appliedGift ? (
+              <div className="flex items-center justify-between gap-3 rounded-xl border border-blush bg-cream-alt/60 px-4 py-3">
+                <div className="text-sm">
+                  <p className="font-semibold text-maroon">Gift card {appliedGift.code}</p>
+                  <p className="text-xs text-ink/50">Balance: {appliedGift.balanceLabel}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setGiftCard(null)}
+                  className="text-xs font-semibold text-ink/50 hover:text-rose"
+                >
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-maroon mb-1">
+                  Gift card <span className="text-ink/40 font-normal">(optional)</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    value={giftCodeInput}
+                    onChange={(e) => setGiftCodeInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && applyGiftCard()}
+                    placeholder="XXXX-XXXX"
+                    className={`${inputClass} uppercase font-mono tracking-wider`}
+                  />
+                  <button
+                    type="button"
+                    onClick={applyGiftCard}
+                    disabled={applyingGift || !giftCodeInput.trim()}
+                    className="shrink-0 rounded-xl border border-maroon text-maroon font-semibold px-4 text-sm hover:bg-maroon hover:text-cream disabled:opacity-40 transition-colors"
+                  >
+                    {applyingGift ? "..." : "Apply"}
+                  </button>
+                </div>
+                {giftError && <p className="mt-1.5 text-xs text-red-600">{giftError}</p>}
+                {giftCard && !appliedGift && (
+                  <p className="mt-1.5 text-xs text-ink/50">Your order changed — please apply your gift card again.</p>
+                )}
+              </div>
+            )}
+
+            <div className="flex flex-col gap-1 text-sm border-t border-blush pt-3">
+              <div className="flex justify-between text-ink/60">
+                <span>Subtotal</span>
+                <span>{formatCents(totalCents)}</span>
+              </div>
+              {appliedGift && (
+                <div className="flex justify-between text-ink/60">
+                  <span>Gift card</span>
+                  <span>&minus;{formatCents(appliedGift.discountCents)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-semibold text-maroon">
+                <span>Total</span>
+                <span>{formatCents(amountDueCents)}</span>
+              </div>
+            </div>
 
             {error && <p className="text-sm text-red-600">{error}</p>}
 
@@ -220,10 +356,18 @@ export default function CheckoutPage() {
               disabled={submitting}
               className="rounded-full bg-rose hover:bg-rose-dark disabled:opacity-60 text-white font-semibold px-6 py-3.5 text-sm shadow-sm transition-colors"
             >
-              {submitting ? "Redirecting to payment..." : `Pay ${formatCents(totalCents)} ›`}
+              {submitting
+                ? amountDueCents === 0
+                  ? "Placing your order..."
+                  : "Redirecting to payment..."
+                : amountDueCents === 0
+                  ? "Place Order ›"
+                  : `Pay ${formatCents(amountDueCents)} ›`}
             </button>
             <p className="text-xs text-ink/50 text-center">
-              All orders are paid online when you order, so it&apos;s ready to grab when you get here.
+              {amountDueCents === 0
+                ? "Your gift card covers this whole order."
+                : "All orders are paid online when you order, so it’s ready to grab when you get here."}
             </p>
           </div>
         </section>

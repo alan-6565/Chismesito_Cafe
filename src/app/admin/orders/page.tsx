@@ -41,6 +41,7 @@ type Order = {
   total_cents: number;
   staff_notes: string | null;
   pickup_at: string | null; // null = ASAP
+  gift_card_cents: number;
   items: OrderItem[];
 };
 
@@ -415,6 +416,9 @@ function OrderCard({
               <p className="text-sm text-ink/50">
                 {itemCount} item{itemCount === 1 ? "" : "s"}
               </p>
+              {order.gift_card_cents > 0 && (
+                <p className="text-xs font-semibold text-rose">{formatCents(order.gift_card_cents)} gift card</p>
+              )}
             </div>
           </div>
 

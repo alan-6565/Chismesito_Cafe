@@ -1,13 +1,12 @@
-import { after } from "next/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
 import { stripe } from "@/lib/stripe";
 import { formatCents } from "@/lib/money";
 import { formatOrderStamp, formatPickupTime } from "@/lib/hours";
-import { sendOrderConfirmationEmail } from "@/lib/email";
-import { notifyStaffOfNewOrder } from "@/lib/staff-notify";
+import { markOrderPaid } from "@/lib/orders";
 import ClearCartOnMount from "@/components/ClearCartOnMount";
+import { TicketIcon } from "@/components/icons";
 
 export default async function OrderConfirmationPage({
   params,
@@ -21,7 +20,7 @@ export default async function OrderConfirmationPage({
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, total_cents, fulfillment_status, payment_method, payment_status, pickup_at")
+    .select("id, created_at, customer_name, total_cents, fulfillment_status, payment_method, payment_status, pickup_at, gift_card_cents, giveaway_opt_in, customer_email")
     .eq("id", id)
     .single();
 
@@ -33,14 +32,8 @@ export default async function OrderConfirmationPage({
   if (order.payment_method === "online" && order.payment_status !== "paid" && session_id) {
     const session = await stripe.checkout.sessions.retrieve(session_id);
     if (session.payment_status === "paid") {
-      const stripeEmail = session.customer_details?.email;
-      await supabaseAdmin
-        .from("orders")
-        .update({ payment_status: "paid", ...(stripeEmail ? { customer_email: stripeEmail } : {}) })
-        .eq("id", id);
+      await markOrderPaid(id, session.customer_details?.email);
       order.payment_status = "paid";
-      after(() => sendOrderConfirmationEmail(id));
-      after(() => notifyStaffOfNewOrder(id));
     }
   }
 
@@ -88,11 +81,32 @@ export default async function OrderConfirmationPage({
             </div>
           );
         })}
+        {order.gift_card_cents > 0 && (
+          <div className="border-t border-blush pt-3 flex items-center justify-between text-sm text-ink/60">
+            <span>Gift card</span>
+            <span>&minus;{formatCents(order.gift_card_cents)}</span>
+          </div>
+        )}
         <div className="border-t border-blush pt-3 flex items-center justify-between font-semibold text-maroon">
           <span>{paidOnline ? "Total paid" : "Total due at pickup"}</span>
-          <span>{formatCents(order.total_cents)}</span>
+          <span>{formatCents(order.total_cents - order.gift_card_cents)}</span>
         </div>
       </div>
+
+      {paidOnline && order.giveaway_opt_in && order.customer_email && (
+        <div className="mt-6 rounded-2xl bg-blush-soft/60 border border-blush px-5 py-4 flex items-center gap-4 text-left">
+          <TicketIcon className="w-8 h-8 shrink-0 text-rose" />
+          <div>
+            <p className="font-semibold text-maroon">You&apos;re entered in this month&apos;s giveaway!</p>
+            <p className="text-sm text-ink/60">
+              We&apos;ll email {order.customer_email} if you win.{" "}
+              <Link href="/#giveaway" className="underline hover:text-rose">
+                See the prizes
+              </Link>
+            </p>
+          </div>
+        </div>
+      )}
 
       <Link
         href="/menu"

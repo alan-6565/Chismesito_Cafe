@@ -1,9 +1,11 @@
 import "server-only";
 import { Resend } from "resend";
+import QRCode from "qrcode";
 import { supabaseAdmin } from "./supabase";
 import { formatCents } from "./money";
 import { business } from "./data";
 import { formatOrderStamp, formatPickupTime } from "./hours";
+import { describeValue, formatCode, type GiftCard } from "./gift-cards";
 
 export const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -59,7 +61,7 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, customer_email, payment_method, total_cents, pickup_at, confirmation_email_sent_at")
+    .select("id, created_at, customer_name, customer_email, payment_method, total_cents, gift_card_cents, pickup_at, confirmation_email_sent_at")
     .eq("id", orderId)
     .single();
 
@@ -89,9 +91,17 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
 
         <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;padding:20px 24px;">
           ${itemsHtml(items ?? [])}
+          ${
+            order.gift_card_cents > 0
+              ? `<tr>
+            <td style="padding-top:12px;border-top:1px solid #f3d9de;color:#6b4a50;font-size:14px;">Gift card</td>
+            <td style="padding-top:12px;border-top:1px solid #f3d9de;color:#6b4a50;font-size:14px;text-align:right;">&minus;${formatCents(order.gift_card_cents)}</td>
+          </tr>`
+              : ""
+          }
           <tr>
             <td style="padding-top:12px;border-top:1px solid #f3d9de;color:#451820;font-weight:700;font-size:14px;">${totalLabel}</td>
-            <td style="padding-top:12px;border-top:1px solid #f3d9de;color:#451820;font-weight:700;font-size:14px;text-align:right;">${formatCents(order.total_cents)}</td>
+            <td style="padding-top:12px;border-top:1px solid #f3d9de;color:#451820;font-weight:700;font-size:14px;text-align:right;">${formatCents(order.total_cents - order.gift_card_cents)}</td>
           </tr>
         </table>
 
@@ -164,4 +174,67 @@ export async function sendOrderReadyEmail(orderId: string): Promise<void> {
       .update({ ready_email_sent_at: new Date().toISOString() })
       .eq("id", orderId);
   }
+}
+
+function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+}
+
+/**
+ * Emails a gift card's code to its recipient. `prize` is set when it was won
+ * in the monthly giveaway, which changes the wording.
+ */
+export async function sendGiftCardEmail(card: GiftCard, prize?: string): Promise<boolean> {
+  if (!resend || !card.recipient_email) return false;
+
+  const name = card.recipient_name ? `, ${escapeHtml(card.recipient_name)}` : "";
+  const headline = prize ? `You won${name}! 🎉` : `A gift for you${name}!`;
+  const intro = prize
+    ? `You're a winner in the ${business.name} monthly giveaway — your prize is <strong>${prize}</strong>.`
+    : `You've got a ${business.name} gift card for <strong>${describeValue(card.kind, card.initial_value)}</strong>.`;
+  const howTo =
+    card.kind === "drinks"
+      ? "Enter this code at checkout when you order online, or show this email at the counter and we'll scan it — any size, any flavor."
+      : "Enter this code at checkout when you order online, or show this email at the counter and we'll scan it. Whatever you don't spend stays on the card for next time.";
+
+  const html = `
+    <div style="background:#fdf6ef;padding:32px 16px;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+      <div style="max-width:480px;margin:0 auto;text-align:center;">
+        <p style="font-size:32px;margin:0 0 8px;">🎁</p>
+        <h1 style="color:#451820;font-size:24px;margin:0 0 8px;">${headline}</h1>
+        <p style="color:#6b4a50;font-size:14px;margin:0 0 24px;">${intro}</p>
+        <div style="background:#ffffff;border-radius:16px;padding:24px;">
+          <p style="color:#a08890;font-size:11px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px;">Your code</p>
+          <img src="cid:giftcard-qr" width="180" height="180" alt="Gift card QR code" style="display:block;margin:0 auto 12px;" />
+          <p style="color:#451820;font-size:30px;font-weight:700;letter-spacing:4px;font-family:ui-monospace,monospace;margin:0 0 8px;">${formatCode(card.code)}</p>
+          <p style="color:#6b4a50;font-size:13px;margin:0;">${describeValue(card.kind, card.initial_value)}</p>
+        </div>
+        <p style="color:#6b4a50;font-size:13px;margin:20px 0 0;">${howTo}</p>
+        <p style="color:#a08890;font-size:12px;margin:24px 0 0;">
+          ${business.name} &middot; ${business.address}
+        </p>
+      </div>
+    </div>`;
+
+  const { error } = await resend.emails.send({
+    from: FROM_ADDRESS,
+    to: card.recipient_email,
+    subject: prize ? `You won the ${business.name} giveaway!` : `Your ${business.name} gift card`,
+    html,
+    // Sent inside the email (not linked) so it shows even offline at the counter.
+    attachments: [
+      {
+        filename: "gift-card-qr.png",
+        content: await QRCode.toBuffer(card.code, { width: 360, margin: 1, color: { dark: "#451820", light: "#ffffff" } }),
+        contentId: "giftcard-qr",
+      },
+    ],
+  });
+
+  if (error) {
+    console.error(`[email] gift card send failed for card ${card.id}:`, error);
+    return false;
+  }
+  await supabaseAdmin.from("gift_cards").update({ emailed_at: new Date().toISOString() }).eq("id", card.id);
+  return true;
 }
