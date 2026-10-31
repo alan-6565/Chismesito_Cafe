@@ -80,6 +80,8 @@ alter table orders add column if not exists staff_notified_at timestamptz;
 alter table orders add column if not exists staff_notes text;
 -- Order-ahead: when the customer wants to pick up. Null means "ASAP".
 alter table orders add column if not exists pickup_at timestamptz;
+-- When the order became paid. Repeat staff reminders count from here.
+alter table orders add column if not exists paid_at timestamptz;
 
 create table if not exists order_items (
   id uuid primary key default gen_random_uuid(),

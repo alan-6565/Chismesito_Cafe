@@ -45,7 +45,7 @@ export async function addGiveawayEntry(entry: {
 export async function markOrderPaid(orderId: string, stripeEmail?: string | null): Promise<boolean> {
   const { data, error } = await supabaseAdmin
     .from("orders")
-    .update({ payment_status: "paid", ...(stripeEmail ? { customer_email: stripeEmail } : {}) })
+    .update({ payment_status: "paid", paid_at: new Date().toISOString(), ...(stripeEmail ? { customer_email: stripeEmail } : {}) })
     .eq("id", orderId)
     .neq("payment_status", "paid")
     .select("id, created_at, customer_name, customer_email, customer_phone, giveaway_opt_in");

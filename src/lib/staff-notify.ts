@@ -55,3 +55,44 @@ export async function notifyStaffOfNewOrder(orderId: string): Promise<void> {
       .eq("id", orderId);
   }
 }
+
+// Repeat reminders for paid orders nobody has accepted yet. A Supabase timer
+// calls /api/cron/reminders every 30 seconds; each call emails once per
+// waiting order, until it's accepted or this many minutes have passed.
+const FIRST_REMINDER_SECONDS = 25;
+const STOP_AFTER_MINUTES = 20;
+
+export async function remindStaffOfWaitingOrders(): Promise<number> {
+  if (!resend || !STAFF_EMAIL) {
+    console.error("[email] staff reminders skipped: RESEND_API_KEY or STAFF_EMAIL not set");
+    return 0;
+  }
+
+  const now = Date.now();
+  const { data: orders, error } = await supabaseAdmin
+    .from("orders")
+    .select("id, customer_name, total_cents, pickup_at, paid_at")
+    .eq("payment_status", "paid")
+    .eq("fulfillment_status", "pending")
+    .lte("paid_at", new Date(now - FIRST_REMINDER_SECONDS * 1000).toISOString())
+    .gte("paid_at", new Date(now - STOP_AFTER_MINUTES * 60 * 1000).toISOString())
+    .order("paid_at");
+  if (error) throw error;
+
+  for (const order of orders ?? []) {
+    const seconds = Math.round((now - new Date(order.paid_at).getTime()) / 30_000) * 30;
+    const waited = seconds < 60 ? `${seconds} sec` : `${Math.floor(seconds / 60)}${seconds % 60 ? "½" : ""} min`;
+    const pickupLine = order.pickup_at ? formatPickupTime(order.pickup_at) : "ASAP";
+
+    // The wait time is in the subject so each reminder is a new email, not a
+    // silent addition to the first one's thread.
+    const { error: sendError } = await resend.emails.send({
+      from: FROM_ADDRESS,
+      to: STAFF_EMAIL,
+      subject: `⏰ Order still waiting (${waited}) — ${order.customer_name}`,
+      html: `<p><strong>${order.customer_name}</strong>'s order (${formatCents(order.total_cents)}) has been waiting ${waited}. Open the orders screen and tap <strong>Accept Order</strong> to stop these reminders.</p><p><strong>Pickup: ${pickupLine}</strong></p><p>Order #${order.id.slice(0, 8)}</p>`,
+    });
+    if (sendError) console.error(`[email] reminder failed for order ${order.id}:`, sendError);
+  }
+  return orders?.length ?? 0;
+}
