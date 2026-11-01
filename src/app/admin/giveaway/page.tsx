@@ -192,7 +192,9 @@ export default function AdminGiveawayPage() {
                 <p className={`mt-3 text-xs ${allEmailed ? "text-ink/50" : "text-amber-700"}`}>
                   {allEmailed
                     ? "Their prize codes were emailed to them. They're also listed under Gift Cards."
-                    : "The prize email didn't go through. Reach out with the codes above. They're also listed under Gift Cards."}
+                    : data.prizeCards.length > 0
+                      ? "The prize email didn't go through. Reach out with the codes above. They're also listed under Gift Cards."
+                      : "Their prize codes weren't made. Create them under Gift Cards, then reach out."}
                 </p>
               </div>
             ) : (
