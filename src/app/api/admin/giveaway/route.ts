@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { giveawayMonth } from "@/lib/giveaway";
+import { monthToDraw } from "@/lib/giveaway-draw";
 
 export async function GET(req: NextRequest) {
   const current = giveawayMonth();
@@ -25,11 +26,3 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ month, currentMonth: current, months, entries, prizeCards: prizeCards ?? [] });
 }
 
-/** Last month, if it has entries but no winner yet — the draw that's due. */
-async function monthToDraw(): Promise<string | null> {
-  const [y, m] = giveawayMonth().split("-").map(Number);
-  const previous = m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`;
-  const { data } = await supabaseAdmin.from("giveaway_entries").select("won_at").eq("month", previous);
-  if (!data?.length || data.some((e) => e.won_at)) return null;
-  return previous;
-}

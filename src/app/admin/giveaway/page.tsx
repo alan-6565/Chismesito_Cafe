@@ -200,12 +200,13 @@ export default function AdminGiveawayPage() {
             ) : (
               <div className="mt-2">
                 <p className="text-sm text-ink/60">
-                  Draws 1 entry at random — more entries means better odds — and emails that person their prize (
-                  {GIVEAWAY_PRIZES.map((p) => p.title).join(" + ")}) as gift card codes.
+                  The winner is picked automatically at midnight on the 1st: 1 entry at random — more entries means
+                  better odds. They get their prize ({GIVEAWAY_PRIZES.map((p) => p.title).join(" + ")}) as gift card
+                  codes by email, and you get an email saying who won. The button below picks one now instead.
                 </p>
                 {data.month === data.currentMonth && (
                   <p className="mt-2 text-sm text-amber-700">
-                    This month is still running — the winner is normally picked on the 1st of next month.
+                    This month is still running — its winner will be picked automatically on the 1st.
                   </p>
                 )}
                 {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
@@ -216,7 +217,7 @@ export default function AdminGiveawayPage() {
                     confirmDraw ? "bg-rose hover:bg-rose-dark text-white" : "bg-maroon text-cream"
                   }`}
                 >
-                  {drawing ? "Picking..." : confirmDraw ? "Tap again to pick & email the winner" : "Pick Winner"}
+                  {drawing ? "Picking..." : confirmDraw ? "Tap again to pick & email the winner" : "Pick Winner Now"}
                 </button>
               </div>
             )}
