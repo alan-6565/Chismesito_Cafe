@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from "react";
 
 export type CartModifier = {
   groupId: string;
@@ -41,6 +41,8 @@ type CartContextValue = {
 const CartContext = createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "chismesito-cart";
+// A cart nobody has touched in this long starts over empty next visit.
+const CART_TTL_MS = 60 * 60 * 1000;
 
 // Same menu item + same size + same modifier selections + same note should
 // merge into one line (just bump quantity) instead of creating a duplicate
@@ -58,12 +60,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  // The cart as loaded and when it was saved, so just opening the site
+  // doesn't restart the hour.
+  const loaded = useRef<{ items: CartItem[]; savedAt: number } | null>(null);
+  const lastChange = useRef(0);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
-        const parsed = JSON.parse(stored);
+        const saved = JSON.parse(stored) as { items?: unknown; savedAt?: number };
+        // Older saves were a bare array with no time, so they count as expired.
+        const fresh = typeof saved?.savedAt === "number" && Date.now() - saved.savedAt < CART_TTL_MS;
+        const parsed = fresh ? saved.items : [];
         // Discard lines from an older cart shape (e.g. pre-modifiers) rather
         // than crashing later on missing fields like `.modifiers`.
         const valid = Array.isArray(parsed)
@@ -72,6 +81,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
                 i && typeof i.cartLineId === "string" && Array.isArray(i.modifiers) && typeof i.unitPriceCents === "number"
             )
           : [];
+        if (fresh) loaded.current = { items: valid, savedAt: saved.savedAt! };
         setItems(valid);
       }
     } catch {
@@ -81,8 +91,27 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (hydrated) localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    if (!hydrated) return;
+    const savedAt = loaded.current?.items === items ? loaded.current.savedAt : Date.now();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ items, savedAt }));
+    lastChange.current = savedAt;
   }, [items, hydrated]);
+
+  // Phones often bring back an open tab instead of reloading it, so check the
+  // cart's age again whenever the page comes back into view.
+  useEffect(() => {
+    const onShow = () => {
+      if (document.visibilityState === "visible" && Date.now() - lastChange.current >= CART_TTL_MS) {
+        setItems((prev) => (prev.length ? [] : prev));
+      }
+    };
+    document.addEventListener("visibilitychange", onShow);
+    window.addEventListener("pageshow", onShow);
+    return () => {
+      document.removeEventListener("visibilitychange", onShow);
+      window.removeEventListener("pageshow", onShow);
+    };
+  }, []);
 
   const addItem: CartContextValue["addItem"] = (item, quantity = 1) => {
     const cartLineId = lineKey(item);
