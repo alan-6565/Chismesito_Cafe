@@ -82,6 +82,8 @@ alter table orders add column if not exists staff_notes text;
 alter table orders add column if not exists pickup_at timestamptz;
 -- When the order became paid. Repeat staff reminders count from here.
 alter table orders add column if not exists paid_at timestamptz;
+-- Card processing fee the customer paid on top of total_cents (menu prices).
+alter table orders add column if not exists card_fee_cents integer not null default 0;
 
 create table if not exists order_items (
   id uuid primary key default gen_random_uuid(),

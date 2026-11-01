@@ -61,7 +61,7 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, customer_email, payment_method, total_cents, gift_card_cents, pickup_at, confirmation_email_sent_at")
+    .select("id, created_at, customer_name, customer_email, payment_method, total_cents, gift_card_cents, card_fee_cents, pickup_at, confirmation_email_sent_at")
     .eq("id", orderId)
     .single();
 
@@ -99,9 +99,17 @@ export async function sendOrderConfirmationEmail(orderId: string): Promise<void>
           </tr>`
               : ""
           }
+          ${
+            order.card_fee_cents > 0
+              ? `<tr>
+            <td style="padding-top:8px;color:#6b4a50;font-size:14px;">Card processing fee</td>
+            <td style="padding-top:8px;color:#6b4a50;font-size:14px;text-align:right;">${formatCents(order.card_fee_cents)}</td>
+          </tr>`
+              : ""
+          }
           <tr>
             <td style="padding-top:12px;border-top:1px solid #f3d9de;color:#451820;font-weight:700;font-size:14px;">${totalLabel}</td>
-            <td style="padding-top:12px;border-top:1px solid #f3d9de;color:#451820;font-weight:700;font-size:14px;text-align:right;">${formatCents(order.total_cents - order.gift_card_cents)}</td>
+            <td style="padding-top:12px;border-top:1px solid #f3d9de;color:#451820;font-weight:700;font-size:14px;text-align:right;">${formatCents(order.total_cents - order.gift_card_cents + order.card_fee_cents)}</td>
           </tr>
         </table>
 

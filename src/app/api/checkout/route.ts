@@ -5,6 +5,7 @@ import { priceCartLines, type CartLine } from "@/lib/pricing";
 import { isOpenNow, resolvePickupSlot } from "@/lib/hours";
 import { formatCode, quoteGiftCard, spendGiftCard, type GiftCardQuote } from "@/lib/gift-cards";
 import { cancelUnpaidOrder, markOrderPaid } from "@/lib/orders";
+import { cardFeeFor } from "@/lib/card-fee";
 
 const CHECKOUT_EXPIRY_SECONDS = 30 * 60;
 
@@ -49,6 +50,8 @@ export async function POST(req: NextRequest) {
     giftCard = quote;
   }
   const amountDueCents = priced.totalCents - (giftCard?.discountCents ?? 0);
+  // Only what's paid by card carries the processing fee.
+  const cardFeeCents = cardFeeFor(amountDueCents);
 
   // Stripe collects an email for paid orders; a card-only order skips Stripe.
   if (giveawayOptIn && amountDueCents === 0 && !customerEmail?.trim()) {
@@ -71,6 +74,7 @@ export async function POST(req: NextRequest) {
       payment_status: "pending",
       fulfillment_status: "pending",
       total_cents: priced.totalCents,
+      card_fee_cents: cardFeeCents,
       pickup_at: pickupAt,
       giveaway_opt_in: !!giveawayOptIn,
       gift_card_id: giftCard?.card.id ?? null,
@@ -123,17 +127,27 @@ export async function POST(req: NextRequest) {
     mode: "payment",
     payment_method_types: ["card"],
     customer_email: customerEmail?.trim() || undefined,
-    line_items: priced.orderItemsPayload.map((item) => ({
-      quantity: item.quantity,
-      price_data: {
-        currency: "usd",
-        unit_amount: item.price_cents_snapshot,
-        product_data: {
-          name: item.size_label ? `${item.name_snapshot} (${item.size_label})` : item.name_snapshot,
-          description: item.modifiers.map((m) => m.option).join(", ") || undefined,
+    line_items: [
+      ...priced.orderItemsPayload.map((item) => ({
+        quantity: item.quantity,
+        price_data: {
+          currency: "usd",
+          unit_amount: item.price_cents_snapshot,
+          product_data: {
+            name: item.size_label ? `${item.name_snapshot} (${item.size_label})` : item.name_snapshot,
+            description: item.modifiers.map((m) => m.option).join(", ") || undefined,
+          },
+        },
+      })),
+      {
+        quantity: 1,
+        price_data: {
+          currency: "usd",
+          unit_amount: cardFeeCents,
+          product_data: { name: "Card processing fee" },
         },
       },
-    })),
+    ],
     success_url: `${origin}/order/confirmation/${order.id}?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/checkout`,
     ...(coupon ? { discounts: [{ coupon: coupon.id }] } : {}),

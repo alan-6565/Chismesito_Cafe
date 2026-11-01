@@ -20,7 +20,7 @@ export default async function OrderConfirmationPage({
 
   const { data: order } = await supabaseAdmin
     .from("orders")
-    .select("id, created_at, customer_name, total_cents, fulfillment_status, payment_method, payment_status, pickup_at, gift_card_cents, giveaway_opt_in, customer_email")
+    .select("id, created_at, customer_name, total_cents, fulfillment_status, payment_method, payment_status, pickup_at, gift_card_cents, card_fee_cents, giveaway_opt_in, customer_email")
     .eq("id", id)
     .single();
 
@@ -87,9 +87,15 @@ export default async function OrderConfirmationPage({
             <span>&minus;{formatCents(order.gift_card_cents)}</span>
           </div>
         )}
+        {order.card_fee_cents > 0 && (
+          <div className="flex items-center justify-between text-sm text-ink/60">
+            <span>Card processing fee</span>
+            <span>{formatCents(order.card_fee_cents)}</span>
+          </div>
+        )}
         <div className="border-t border-blush pt-3 flex items-center justify-between font-semibold text-maroon">
           <span>{paidOnline ? "Total paid" : "Total due at pickup"}</span>
-          <span>{formatCents(order.total_cents - order.gift_card_cents)}</span>
+          <span>{formatCents(order.total_cents - order.gift_card_cents + order.card_fee_cents)}</span>
         </div>
       </div>
 

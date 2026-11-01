@@ -5,6 +5,7 @@ import Link from "next/link";
 import OrderPanel from "@/components/OrderPanel";
 import { useCart } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
+import { cardFeeFor } from "@/lib/card-fee";
 import { formatTime, getPickupSlots, isOpenNow, type PickupDay } from "@/lib/hours";
 import { GiftIcon } from "@/components/icons";
 
@@ -58,7 +59,8 @@ export default function CheckoutPage() {
   // applying one means it has to be applied again.
   const cartKey = JSON.stringify(cartLines);
   const appliedGift = giftCard?.cartKey === cartKey ? giftCard : null;
-  const amountDueCents = totalCents - (appliedGift?.discountCents ?? 0);
+  const cardFeeCents = cardFeeFor(totalCents - (appliedGift?.discountCents ?? 0));
+  const amountDueCents = totalCents - (appliedGift?.discountCents ?? 0) + cardFeeCents;
 
   const cartPayload = () => ({
     customerName: name,
@@ -341,6 +343,12 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-ink/60">
                   <span>Gift card</span>
                   <span>&minus;{formatCents(appliedGift.discountCents)}</span>
+                </div>
+              )}
+              {cardFeeCents > 0 && (
+                <div className="flex justify-between text-ink/60">
+                  <span>Card processing fee</span>
+                  <span>{formatCents(cardFeeCents)}</span>
                 </div>
               )}
               <div className="flex justify-between font-semibold text-maroon">

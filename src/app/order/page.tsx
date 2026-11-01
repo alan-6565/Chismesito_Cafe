@@ -39,6 +39,7 @@ export default function OrderPage() {
                 Order Online <ArrowRightIcon />
               </Link>
               <p className="text-ink/60">Order ahead for pickup.</p>
+              <p className="-mt-3 text-xs text-ink/50">A card processing fee is added at checkout.</p>
             </div>
             <div className="flex flex-col items-center gap-5 px-6 py-8 sm:py-10 border-t sm:border-t-0 sm:border-l border-blush">
               <span className="w-24 h-24 rounded-full bg-blush-soft flex items-center justify-center">
