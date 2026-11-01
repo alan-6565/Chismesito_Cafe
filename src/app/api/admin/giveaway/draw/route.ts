@@ -26,6 +26,20 @@ export async function POST(req: NextRequest) {
   if (!entries.length) return NextResponse.json({ error: "No entries this month" }, { status: 400 });
 
   const winner = entries[randomInt(entries.length)];
+  const prizeTitle = GIVEAWAY_PRIZES.map((p) => p.title).join(" + ");
+
+  // Claim the win before making any prizes. The one-winner-per-month index
+  // rejects a second claim, so a double tap or two devices can't both win.
+  const { error: claimError } = await supabaseAdmin
+    .from("giveaway_entries")
+    .update({ prize: prizeTitle, won_at: new Date().toISOString() })
+    .eq("id", winner.id)
+    .is("won_at", null);
+  if (claimError?.code === "23505") {
+    return NextResponse.json({ error: "A winner was already picked for this month" }, { status: 409 });
+  }
+  if (claimError) return NextResponse.json({ error: "Could not save the winner" }, { status: 500 });
+
   const cardIds: string[] = [];
   let emailed = true;
 
@@ -42,14 +56,7 @@ export async function POST(req: NextRequest) {
     emailed = (await sendGiftCardEmail(card, prize.title)) && emailed;
   }
 
-  await supabaseAdmin
-    .from("giveaway_entries")
-    .update({
-      prize: GIVEAWAY_PRIZES.map((p) => p.title).join(" + "),
-      gift_card_id: cardIds[0],
-      won_at: new Date().toISOString(),
-    })
-    .eq("id", winner.id);
+  await supabaseAdmin.from("giveaway_entries").update({ gift_card_id: cardIds[0] }).eq("id", winner.id);
 
   return NextResponse.json({ winner: { name: winner.name, emailed } });
 }

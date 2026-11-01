@@ -15,7 +15,7 @@ type Entry = {
   won_at: string | null;
 };
 
-type PrizeCard = { code: string; kind: "amount" | "drinks"; initial_value: number; balance: number };
+type PrizeCard = { code: string; kind: "amount" | "drinks"; initial_value: number; balance: number; emailed_at: string | null };
 
 type GiveawayData = {
   month: string;
@@ -80,6 +80,9 @@ export default function AdminGiveawayPage() {
     people.set(e.email_normalized, person);
   }
   const peopleList = [...people.values()].sort((a, b) => b.total - a.total);
+  const winnerPerson = winner ? people.get(winner.email_normalized) : undefined;
+  const winnerPhone = winnerPerson?.phone ?? winner?.phone ?? null;
+  const allEmailed = data ? data.prizeCards.length > 0 && data.prizeCards.every((c) => c.emailed_at) : false;
 
   return (
     <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-10">
@@ -130,15 +133,54 @@ export default function AdminGiveawayPage() {
           <section className="mt-6 rounded-2xl bg-white shadow-sm p-5">
             <h2 className="font-display font-semibold text-lg text-maroon">Winner</h2>
             {winner ? (
-              <div className="mt-3 rounded-xl border border-blush px-4 py-3">
-                <p className="text-xs font-semibold uppercase tracking-wide text-rose">{winner.prize}</p>
-                <p className="font-semibold text-maroon">{winner.name}</p>
-                <p className="text-xs text-ink/50">
-                  {winner.email}
-                  {winner.phone && ` · ${winner.phone}`}
+              <div className="mt-3 rounded-xl border-2 border-rose/40 bg-rose/5 px-5 py-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-rose">
+                  🎉 {formatMonth(data.month)} winner · {winner.prize}
                 </p>
+                <p className="mt-1 font-display font-bold text-2xl text-maroon">{winner.name}</p>
+                <dl className="mt-3 grid gap-1 text-sm sm:grid-cols-[7rem_1fr]">
+                  <dt className="text-ink/50">Email</dt>
+                  <dd className="text-ink/80 break-all">{winner.email}</dd>
+                  <dt className="text-ink/50">Phone</dt>
+                  <dd className="text-ink/80">{winnerPhone ?? "Not given"}</dd>
+                  <dt className="text-ink/50">Entries</dt>
+                  <dd className="text-ink/80">
+                    {winnerPerson?.total ?? 1} of {data.entries.length}
+                    {winnerPerson && winnerPerson.fromOrders > 0 && ` (${winnerPerson.fromOrders} from orders)`}
+                  </dd>
+                  <dt className="text-ink/50">Picked</dt>
+                  <dd className="text-ink/80">
+                    {new Date(winner.won_at!).toLocaleString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                      timeZone: "America/Los_Angeles",
+                    })}
+                  </dd>
+                </dl>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <a
+                    href={`mailto:${winner.email}?subject=${encodeURIComponent("You won the Chismesito Cafe giveaway!")}`}
+                    className="rounded-xl bg-maroon text-cream font-semibold px-4 py-2 text-sm"
+                  >
+                    Email
+                  </a>
+                  {winnerPhone && (
+                    <>
+                      <a href={`tel:${winnerPhone}`} className="rounded-xl border border-maroon text-maroon font-semibold px-4 py-2 text-sm">
+                        Call
+                      </a>
+                      <a href={`sms:${winnerPhone}`} className="rounded-xl border border-maroon text-maroon font-semibold px-4 py-2 text-sm">
+                        Text
+                      </a>
+                    </>
+                  )}
+                </div>
+
                 {data.prizeCards.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-blush flex flex-col gap-1">
+                  <div className="mt-4 pt-3 border-t border-blush flex flex-col gap-1">
                     {data.prizeCards.map((card) => (
                       <div key={card.code} className="flex justify-between text-sm">
                         <span className="text-ink/60">{describe(card)}</span>
@@ -147,8 +189,10 @@ export default function AdminGiveawayPage() {
                     ))}
                   </div>
                 )}
-                <p className="mt-3 text-xs text-ink/50">
-                  The codes were emailed to them, and are listed under Gift Cards.
+                <p className={`mt-3 text-xs ${allEmailed ? "text-ink/50" : "text-amber-700"}`}>
+                  {allEmailed
+                    ? "Their prize codes were emailed to them. They're also listed under Gift Cards."
+                    : "The prize email didn't go through. Reach out with the codes above. They're also listed under Gift Cards."}
                 </p>
               </div>
             ) : (

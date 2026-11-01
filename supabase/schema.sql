@@ -212,6 +212,8 @@ create unique index if not exists giveaway_entries_order_idx on giveaway_entries
 
 create index if not exists gift_card_redemptions_card_idx on gift_card_redemptions (gift_card_id);
 create index if not exists giveaway_entries_month_idx on giveaway_entries (month);
+-- One winner per month, enforced by the database itself.
+create unique index if not exists giveaway_entries_one_winner_idx on giveaway_entries (month) where won_at is not null;
 
 alter table gift_cards enable row level security;
 alter table gift_card_redemptions enable row level security;
