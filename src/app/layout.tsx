@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import MobileTabBar from "@/components/MobileTabBar";
 import CartDrawer from "@/components/CartDrawer";
 import HideOnAdmin from "@/components/HideOnAdmin";
+import OrderingPausedBanner from "@/components/OrderingPausedBanner";
 import StructuredData from "@/components/StructuredData";
 import { CartProvider } from "@/lib/cart-context";
 import { business } from "@/lib/data";
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <StructuredData />
         <CartProvider>
           <HideOnAdmin>
+            <OrderingPausedBanner />
             <Navbar />
           </HideOnAdmin>
           <main className="flex-1 pb-16 md:pb-0">{children}</main>

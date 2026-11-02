@@ -220,3 +220,12 @@ create unique index if not exists giveaway_entries_one_winner_idx on giveaway_en
 alter table gift_cards enable row level security;
 alter table gift_card_redemptions enable row level security;
 alter table giveaway_entries enable row level security;
+
+-- Small store-wide switches set from the dashboard, like pausing online
+-- orders: key "ordering_paused_until" holds an ISO time (or null).
+create table if not exists site_settings (
+  key text primary key,
+  value jsonb,
+  updated_at timestamptz not null default now()
+);
+alter table site_settings enable row level security;

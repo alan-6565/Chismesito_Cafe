@@ -1,5 +1,6 @@
 "use client";
 
+import { useOrderingPause } from "@/lib/use-ordering-pause";
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
@@ -14,6 +15,7 @@ export default function ProductOptionsModal({
   onClose: () => void;
 }) {
   const { addItem } = useCart();
+  const { paused } = useOrderingPause();
 
   const [sizeId, setSizeId] = useState<string | undefined>(item.sizes[0]?.id);
   const [selections, setSelections] = useState<Record<string, Set<string>>>({});
@@ -229,10 +231,10 @@ export default function ProductOptionsModal({
         <div className="p-5 border-t border-blush">
           <button
             onClick={handleAdd}
-            disabled={!canAdd}
+            disabled={!canAdd || paused}
             className="w-full rounded-full bg-rose hover:bg-rose-dark disabled:opacity-50 text-white font-semibold px-6 py-3 flex items-center justify-between"
           >
-            <span>{canAdd ? "Add to Cart" : `Select ${missingRequired[0]?.label}`}</span>
+            <span>{paused ? "Ordering unavailable right now" : canAdd ? "Add to Cart" : `Select ${missingRequired[0]?.label}`}</span>
             <span>{formatCents(totalCents)}</span>
           </button>
         </div>

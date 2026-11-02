@@ -6,6 +6,7 @@ import { isOpenNow, resolvePickupSlot } from "@/lib/hours";
 import { formatCode, quoteGiftCard, spendGiftCard, type GiftCardQuote } from "@/lib/gift-cards";
 import { cancelUnpaidOrder, markOrderPaid } from "@/lib/orders";
 import { cardFeeFor } from "@/lib/card-fee";
+import { pausedUntil } from "@/lib/ordering-pause";
 
 const CHECKOUT_EXPIRY_SECONDS = 30 * 60;
 
@@ -23,6 +24,13 @@ type CartPayload = {
 export async function POST(req: NextRequest) {
   const body = (await req.json()) as CartPayload;
   const { customerName, customerPhone, customerEmail, pickupSlot, giftCardCode, giveawayOptIn, items } = body;
+
+  // Staff paused online orders from the dashboard (turns back on by itself)
+  const until = await pausedUntil().catch(() => null);
+  if (until) {
+    const at = new Date(until).toLocaleTimeString("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", minute: "2-digit" });
+    return NextResponse.json({ error: `Online ordering is currently unavailable. Please try again after ${at}.` }, { status: 503 });
+  }
 
   if (!customerName?.trim() || !items?.length) {
     return NextResponse.json({ error: "Missing name or items" }, { status: 400 });

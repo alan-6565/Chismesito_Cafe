@@ -1,5 +1,6 @@
 "use client";
 
+import { useOrderingPause } from "@/lib/use-ordering-pause";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import OrderPanel from "@/components/OrderPanel";
@@ -13,6 +14,7 @@ type AppliedGiftCard = { code: string; discountCents: number; balanceLabel: stri
 
 export default function CheckoutPage() {
   const { items, totalCents } = useCart();
+  const { paused, backAt } = useOrderingPause();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -361,10 +363,12 @@ export default function CheckoutPage() {
 
             <button
               onClick={submitOnlinePayment}
-              disabled={submitting}
+              disabled={submitting || paused}
               className="rounded-full bg-rose hover:bg-rose-dark disabled:opacity-60 text-white font-semibold px-6 py-3.5 text-sm shadow-sm transition-colors"
             >
-              {submitting
+              {paused
+                ? `Ordering unavailable until ${backAt}`
+                : submitting
                 ? amountDueCents === 0
                   ? "Placing your order..."
                   : "Redirecting to payment..."

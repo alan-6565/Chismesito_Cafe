@@ -1,5 +1,6 @@
 "use client";
 
+import PauseOrdersCard from "@/components/admin/PauseOrdersCard";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { formatCents } from "@/lib/money";
@@ -256,6 +257,8 @@ export default function AdminOrdersPage() {
           </select>
         </div>
       </div>
+
+      <PauseOrdersCard />
 
       <div className="mt-6 grid grid-cols-2 lg:grid-cols-4 gap-3">
         {stats.map(({ label, value, sub, Icon, box, icon }) => (
