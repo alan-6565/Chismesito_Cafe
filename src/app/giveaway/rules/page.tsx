@@ -60,7 +60,7 @@ export default function GiveawayRulesPage() {
       body: (
         <>
           Each month, one winner is drawn and receives{" "}
-          {GIVEAWAY_PRIZES.map((p) => `${p.title} (${p.detail.toLowerCase()})`).join(" and ")}. Each prize is
+          {GIVEAWAY_PRIZES.map((p) => `${p.title} (${p.detail.toLowerCase()})`).join(" and ")}. The prize is
           delivered as a digital gift card code that can be used online at this website or in person at
           the café. Prizes have no cash value, cannot be transferred or exchanged, and no substitution is allowed
           except by the Sponsor.

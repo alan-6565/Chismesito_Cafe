@@ -45,7 +45,7 @@ export default function GiveawaySection({ drinkImage }: { drinkImage: string | n
         <div className="p-5 sm:p-8 grid lg:grid-cols-[minmax(0,1fr)_380px] gap-8">
           <div className="flex flex-col gap-8">
             {/* Prizes */}
-            <div className="grid sm:grid-cols-2 gap-4">
+            <div className={`grid gap-4 ${GIVEAWAY_PRIZES.length > 1 ? "sm:grid-cols-2" : ""}`}>
               {GIVEAWAY_PRIZES.map((prize, i) => (
                 <div key={prize.title} className="rounded-2xl bg-white shadow-sm overflow-hidden">
                   <div className="relative h-40 bg-cream-alt flex items-center justify-center">
