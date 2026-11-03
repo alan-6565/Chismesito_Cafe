@@ -168,21 +168,28 @@ export default function HomeHero({ month }: { month: string }) {
 
   useEffect(() => {
     if (hover) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % slides.length), 7000);
+    // Phones only get the giveaway slide, so they never rotate
+    const wide = () => matchMedia("(min-width: 768px)").matches;
+    const t = setInterval(() => setIndex((i) => (wide() ? (i + 1) % slides.length : 0)), 7000);
     return () => clearInterval(t);
   }, [hover, slides.length]);
 
   return (
     <section className="relative" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <div className={`relative h-[760px] sm:h-[720px] ${BANNERS[month] ? "md:h-auto md:aspect-[1920/778]" : "md:h-[600px] lg:h-[640px]"}`}>
+      {/* On phones the giveaway slide sets the height, so its content always fits */}
+      <div className={`relative ${BANNERS[month] ? "md:aspect-[1920/778]" : "md:h-[600px] lg:h-[640px]"}`}>
         {slides.map((s, i) => (
-          <div key={i} aria-hidden={i !== index} className={`absolute inset-0 transition-opacity duration-700 ${i === index ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
+          <div
+            key={i}
+            aria-hidden={i !== index}
+            className={`${i === 0 ? "relative md:absolute max-md:opacity-100! max-md:pointer-events-auto!" : "hidden md:block absolute"} inset-0 transition-opacity duration-700 ${i === index ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+          >
             {s}
           </div>
         ))}
       </div>
 
-      <div className="absolute bottom-4 inset-x-0 flex justify-center gap-2">
+      <div className="hidden md:flex absolute bottom-4 inset-x-0 justify-center gap-2">
         {slides.map((_, i) => (
           <button
             key={i}
