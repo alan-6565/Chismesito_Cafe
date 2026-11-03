@@ -69,7 +69,7 @@ export default async function Home() {
       <HomeHero month={month} />
 
       {/* Shortcuts */}
-      <section className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 -mt-4">
+      <section className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 -mt-4 md:mt-6">
         <div className="card-soft grid grid-cols-2 lg:grid-cols-4 lg:divide-x divide-blush">
           {tiles.map((t) => (
             <Link key={t.title} href={t.href} className="flex flex-col items-center gap-1.5 px-4 py-6 text-center text-wine hover:bg-blush-soft/50 transition-colors first:rounded-l-3xl last:rounded-r-3xl">

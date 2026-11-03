@@ -31,7 +31,7 @@ function Cups() {
   );
 }
 
-function GiveawaySlide({ month }: { month: string }) {
+function GiveawaySlide({ month, cups = "/images/hero-cups.webp" }: { month: string; cups?: string }) {
   return (
     <div className="relative h-full overflow-hidden bg-[radial-gradient(ellipse_at_70%_45%,#a3203f_0%,#7e1533_45%,#4f0b1f_100%)]">
       {/* Fall leaves and flowers around the edges */}
@@ -75,12 +75,12 @@ function GiveawaySlide({ month }: { month: string }) {
 
         <div className="relative h-56 sm:h-72 md:h-full md:max-h-[430px] -mt-2 md:mt-0">
           <Image
-            src="/images/hero-cups.webp"
+            src={cups}
             alt="Two Chismesito Cafe iced drinks"
             fill
             priority
             sizes="(min-width: 768px) 45vw, 90vw"
-            className="object-contain [mask-image:radial-gradient(ellipse_at_center,black_52%,transparent_72%)]"
+            className={`object-contain ${cups === "/images/hero-cups.webp" ? "[mask-image:radial-gradient(ellipse_at_center,black_52%,transparent_72%)]" : "[mask-image:radial-gradient(ellipse_at_center,black_40%,transparent_66%)]"}`}
           />
         </div>
       </div>
@@ -123,6 +123,32 @@ function GiveawaySlide({ month }: { month: string }) {
   );
 }
 
+// A finished banner image for the month, when the cafe has one. It's wide, so
+// phones keep the built-in slide where the text stays big enough to read.
+const BANNERS: Record<string, string> = {
+  November: "/images/giveaway-november.webp",
+};
+
+function BannerSlide({ src, month }: { src: string; month: string }) {
+  return (
+    <div className="relative h-full">
+      <Link href="/menu" className="hidden md:block relative h-full bg-wine-dark">
+        <Image
+          src={src}
+          alt={`${month} Monthly Giveaway! Be this month's winner. Win 2 free drinks. Order online at chismesitocafe.com and get automatically entered to win. Order now.`}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+      </Link>
+      <div className="md:hidden h-full">
+        <GiveawaySlide month={month} cups="/images/giveaway-cups-november.webp" />
+      </div>
+    </div>
+  );
+}
+
 function PhotoSlide({ src, alt, href }: { src: string; alt: string; href: string }) {
   return (
     <Link href={href} className="relative block h-full bg-cream">
@@ -133,7 +159,7 @@ function PhotoSlide({ src, alt, href }: { src: string; alt: string; href: string
 
 export default function HomeHero({ month }: { month: string }) {
   const slides = [
-    <GiveawaySlide key="giveaway" month={month} />,
+    BANNERS[month] ? <BannerSlide key="giveaway" src={BANNERS[month]} month={month} /> : <GiveawaySlide key="giveaway" month={month} />,
     <PhotoSlide key="hero" src="/images/hero.png" alt="Coffee with a little chisme. Specialty drinks, good vibes, and a place to spill the tea." href="/menu" />,
     <PhotoSlide key="fall" src="/images/fall-menu-banner.png" alt="Chismesito Cafe Fall Menu" href="/menu" />,
   ];
@@ -148,7 +174,7 @@ export default function HomeHero({ month }: { month: string }) {
 
   return (
     <section className="relative" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      <div className="relative h-[760px] sm:h-[720px] md:h-[600px] lg:h-[640px]">
+      <div className={`relative h-[760px] sm:h-[720px] ${BANNERS[month] ? "md:h-auto md:aspect-[1920/778]" : "md:h-[600px] lg:h-[640px]"}`}>
         {slides.map((s, i) => (
           <div key={i} aria-hidden={i !== index} className={`absolute inset-0 transition-opacity duration-700 ${i === index ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
             {s}
