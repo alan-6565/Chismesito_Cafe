@@ -123,29 +123,24 @@ function GiveawaySlide({ month, cups = "/images/hero-cups.webp" }: { month: stri
   );
 }
 
-// A finished banner image for the month, when the cafe has one. It's wide, so
-// phones keep the built-in slide where the text stays big enough to read.
+// A finished banner image for the month, when the cafe has one. It's used at
+// every screen size; months without one get the built-in slide above.
 const BANNERS: Record<string, string> = {
   November: "/images/giveaway-november.webp",
 };
 
 function BannerSlide({ src, month }: { src: string; month: string }) {
   return (
-    <div className="relative h-full">
-      <Link href="/menu" className="hidden md:block relative h-full bg-wine-dark">
-        <Image
-          src={src}
-          alt={`${month} Monthly Giveaway! Be this month's winner. Win 2 free drinks. Order online at chismesitocafe.com and get automatically entered to win. Order now.`}
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-      </Link>
-      <div className="md:hidden h-full">
-        <GiveawaySlide month={month} cups="/images/giveaway-cups-november.webp" />
-      </div>
-    </div>
+    <Link href="/menu" className="relative block h-full bg-wine-dark">
+      <Image
+        src={src}
+        alt={`${month} Monthly Giveaway! Be this month's winner. Win 2 free drinks. Order online at chismesitocafe.com and get automatically entered to win. Order now.`}
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover"
+      />
+    </Link>
   );
 }
 
@@ -163,39 +158,42 @@ export default function HomeHero({ month }: { month: string }) {
     <PhotoSlide key="hero" src="/images/hero.png" alt="Coffee with a little chisme. Specialty drinks, good vibes, and a place to spill the tea." href="/menu" />,
     <PhotoSlide key="fall" src="/images/fall-menu-banner.png" alt="Chismesito Cafe Fall Menu" href="/menu" />,
   ];
+  const banner = Boolean(BANNERS[month]);
   const [index, setIndex] = useState(0);
   const [hover, setHover] = useState(false);
 
   useEffect(() => {
     if (hover) return;
-    // Phones only get the giveaway slide, so they never rotate
-    const wide = () => matchMedia("(min-width: 768px)").matches;
+    // Without a banner image, phones only get the giveaway slide, so they never rotate
+    const wide = () => banner || matchMedia("(min-width: 768px)").matches;
     const t = setInterval(() => setIndex((i) => (wide() ? (i + 1) % slides.length : 0)), 7000);
     return () => clearInterval(t);
-  }, [hover, slides.length]);
+  }, [hover, slides.length, banner]);
 
   return (
     <section className="relative" onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-      {/* On phones the giveaway slide sets the height, so its content always fits */}
-      <div className={`relative ${BANNERS[month] ? "md:aspect-[1920/778]" : "md:h-[600px] lg:h-[640px]"}`}>
+      {/* The banner image sets the shape; otherwise on phones the giveaway slide sets the height */}
+      <div className={`relative ${banner ? "aspect-[1920/778]" : "md:h-[600px] lg:h-[640px]"}`}>
         {slides.map((s, i) => (
           <div
             key={i}
             aria-hidden={i !== index}
-            className={`${i === 0 ? "relative md:absolute max-md:opacity-100! max-md:pointer-events-auto!" : "hidden md:block absolute"} inset-0 transition-opacity duration-700 ${i === index ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            className={`${banner ? "absolute" : i === 0 ? "relative md:absolute max-md:opacity-100! max-md:pointer-events-auto!" : "hidden md:block absolute"} inset-0 transition-opacity duration-700 ${i === index ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
             {s}
           </div>
         ))}
       </div>
 
-      <div className="hidden md:flex absolute bottom-4 inset-x-0 justify-center gap-2">
+      <div className={`${banner ? "flex pt-3" : "hidden md:flex absolute bottom-4 inset-x-0"} justify-center gap-2`}>
         {slides.map((_, i) => (
           <button
             key={i}
             onClick={() => setIndex(i)}
             aria-label={`Show banner ${i + 1}`}
-            className={`h-2 rounded-full transition-all ${i === index ? "w-6 bg-white" : "w-2 bg-white/60"} ${index !== 0 ? "ring-1 ring-ink/20" : ""}`}
+            className={`h-2 rounded-full transition-all ${
+              banner ? (i === index ? "w-6 bg-wine" : "w-2 bg-wine/30") : `${i === index ? "w-6 bg-white" : "w-2 bg-white/60"} ${index !== 0 ? "ring-1 ring-ink/20" : ""}`
+            }`}
           />
         ))}
       </div>
