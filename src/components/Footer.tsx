@@ -5,7 +5,7 @@ import { business } from "@/lib/data";
 
 export default function Footer() {
   return (
-    <footer className="bg-maroon text-cream mt-16 pb-16 md:pb-0">
+    <footer className="bg-gradient-to-b from-wine to-wine-dark text-cream mt-16 pb-16 md:pb-0">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 flex flex-col items-center gap-4 text-center">
         <div className="flex items-center gap-3">
           <Logo size="sm" />
@@ -16,9 +16,9 @@ export default function Footer() {
         </p>
         <div className="flex gap-6 text-sm text-cream/70">
           <Link href="/menu" className="hover:text-cream">Menu</Link>
-          <Link href="/about" className="hover:text-cream">About</Link>
-          <Link href="/order" className="hover:text-cream">Order</Link>
-          <Link href="/contact" className="hover:text-cream">Contact</Link>
+          <Link href="/giveaway" className="hover:text-cream">Rewards</Link>
+          <Link href="/about" className="hover:text-cream">Our Story</Link>
+          <Link href="/contact" className="hover:text-cream">Visit Us</Link>
         </div>
         <SocialLinks className="text-cream" />
         <p className="text-xs text-cream/50">

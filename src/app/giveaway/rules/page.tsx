@@ -46,7 +46,7 @@ export default function GiveawayRulesPage() {
       body: (
         <>
           There are two ways to enter: (1) fill out the free entry form on the{" "}
-          <Link href="/#giveaway" className="underline hover:text-rose">
+          <Link href="/giveaway" className="underline hover:text-rose">
             giveaway page
           </Link>
           , or (2) check the giveaway box when placing an online order. Each person may submit one free entry per
@@ -112,7 +112,7 @@ export default function GiveawayRulesPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 sm:px-6 lg:px-8 py-14">
-      <Link href="/#giveaway" className="text-sm text-rose hover:text-rose-dark">
+      <Link href="/giveaway" className="text-sm text-rose hover:text-rose-dark">
         ‹ Back to the giveaway
       </Link>
       <h1 className="mt-4 font-display font-bold text-3xl text-maroon">Monthly Giveaway — Official Rules</h1>

@@ -1,24 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useCart, summarizeCartLine } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
 
 export default function CartDrawer() {
   const { items, isOpen, close, updateQuantity, removeItem, totalCents } = useCart();
-  const pathname = usePathname();
-
-  // On desktop /menu the "Your Order" sidebar already shows the cart, so
-  // adding a drink shouldn't also slide the drawer over it.
-  const coveredBySidebar =
-    isOpen && pathname === "/menu" && window.matchMedia("(min-width: 1024px)").matches;
-  useEffect(() => {
-    if (coveredBySidebar) close();
-  }, [coveredBySidebar, close]);
-
-  if (!isOpen || coveredBySidebar) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
@@ -29,7 +17,7 @@ export default function CartDrawer() {
       />
       <div className="relative w-full max-w-sm h-full bg-cream shadow-xl flex flex-col">
         <div className="flex items-center justify-between px-5 py-4 border-b border-blush">
-          <h2 className="font-display font-bold text-lg text-maroon">Your Cart</h2>
+          <h2 className="font-display font-bold text-xl text-wine-dark">Your Cart</h2>
           <button onClick={close} aria-label="Close cart" className="text-2xl text-maroon leading-none">
             &times;
           </button>
@@ -95,7 +83,7 @@ export default function CartDrawer() {
             className={`rounded-full text-center font-semibold px-5 py-3 text-sm transition-colors ${
               items.length === 0
                 ? "bg-ink/20 text-ink/50 pointer-events-none"
-                : "bg-rose hover:bg-rose-dark text-white"
+                : "bg-berry hover:bg-berry-dark text-white shadow-md shadow-berry/25"
             }`}
           >
             Checkout

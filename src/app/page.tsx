@@ -1,102 +1,102 @@
 import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
-import PromoCarousel from "@/components/PromoCarousel";
-import GiveawaySection from "@/components/GiveawaySection";
-import { CupIcon, LeafIcon, HeartIcon, PinIcon, InstagramIcon } from "@/components/icons";
-import { promotion, promoSlides, business } from "@/lib/data";
+import HomeHero from "@/components/HomeHero";
+import { InstagramIcon } from "@/components/icons";
+import { business } from "@/lib/data";
 import { getMenu } from "@/lib/menu";
+import { formatMonth, giveawayMonth } from "@/lib/giveaway";
 
 export const revalidate = 0;
 
-const features = [
-  { Icon: CupIcon, title: "Specialty Drinks", text: "Unique flavors you won't find anywhere else." },
-  { Icon: LeafIcon, title: "Quality Ingredients", text: "Made with premium and fresh ingredients." },
-  { Icon: HeartIcon, title: "Made with Love", text: "Every drink is made to make you smile." },
-  { Icon: PinIcon, title: "Richmond, CA", text: "Proudly serving our amazing community." },
+const line = { fill: "none", stroke: "currentColor", strokeWidth: 1.7, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+
+// The four shortcuts under the banner in the mockup
+const tiles = [
+  {
+    href: "/menu",
+    title: "Order Online",
+    text: "Quick & easy",
+    icon: (
+      <svg viewBox="0 0 32 32" className="w-9 h-9" {...line}>
+        <path d="M5 11h18v7a7 7 0 0 1-7 7h-4a7 7 0 0 1-7-7v-7ZM23 13h2a3 3 0 0 1 0 6h-2M4 28h22" />
+        <path d="M13 15.5c-1.3-1.8-4-.6-2.7 1.3L13 19.5l2.7-2.7c1.3-1.9-1.4-3.1-2.7-1.3Z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/giveaway",
+    title: "Rewards",
+    text: "Monthly giveaway",
+    icon: (
+      <svg viewBox="0 0 32 32" className="w-9 h-9" {...line}>
+        <path d="M5 12h22v5H5zM7 17h18v11H7zM16 12v16M16 12c-2-5-8-5-7-1 .5 1.5 4 1 7 1Zm0 0c2-5 8-5 7-1-.5 1.5-4 1-7 1Z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/giveaway",
+    title: "Giveaway",
+    text: "Win 2 free drinks",
+    icon: (
+      <svg viewBox="0 0 32 32" className="w-9 h-9" {...line}>
+        <path d="M9 5h14v6a7 7 0 0 1-14 0V5ZM9 7H5a4 4 0 0 0 4 6M23 7h4a4 4 0 0 1-4 6M16 18v5M11 27h10l-1-4h-8l-1 4Z" />
+        <path d="M16 9.5c-.9-1.2-2.7-.4-1.8.9L16 12.2l1.8-1.8c.9-1.3-.9-2.1-1.8-.9Z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/contact",
+    title: "Visit Us",
+    text: `${business.city}, ${business.state}`,
+    icon: (
+      <svg viewBox="0 0 32 32" className="w-9 h-9" {...line}>
+        <path d="M16 29s9-8.4 9-15.5a9 9 0 0 0-18 0C7 20.6 16 29 16 29Z" />
+        <circle cx="16" cy="13.5" r="3.2" />
+      </svg>
+    ),
+  },
 ];
 
 export default async function Home() {
   const items = await getMenu();
-  const trending = items.filter((i) => i.featured).slice(0, 5);
+  const loved = items.filter((i) => i.featured).slice(0, 8);
+  const month = formatMonth(giveawayMonth()).split(" ")[0];
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative w-full h-[420px] sm:h-[520px] lg:h-[640px]">
-        <Image
-          src="/images/hero.png"
-          alt="Chismesito Cafe — coffee with a little chisme. Specialty drinks, good vibes, and a place to spill the tea."
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-left sm:object-center"
-        />
-        <h1 className="sr-only">{business.tagline}</h1>
-        <div className="absolute inset-0 flex items-end pb-10 sm:pb-14 lg:pb-16">
-          <div className="mx-auto max-w-7xl w-full px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/menu"
-                className="rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-6 py-3 shadow-lg transition-colors"
-              >
-                View Menu
-              </Link>
-              <Link
-                href="/order"
-                className="rounded-full border-2 border-maroon bg-cream/90 text-maroon font-semibold px-6 py-3 shadow-lg hover:bg-maroon hover:text-cream transition-colors"
-              >
-                Order Now
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <h2 className="sr-only">{business.tagline}</h2>
+      <HomeHero month={month} />
 
-      <GiveawaySection drinkImage={items.find((i) => i.featured && i.imageUrl)?.imageUrl ?? null} />
-
-      {/* Trending */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
-        <h2 className="text-center font-display font-bold text-2xl sm:text-3xl text-maroon">
-          🌸 Trending Now 🌸
-        </h2>
-        <div className="mt-8 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-5">
-          {trending.map((item) => (
-            <ProductCard key={item.id} item={item} />
+      {/* Shortcuts */}
+      <section className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 -mt-4">
+        <div className="card-soft grid grid-cols-2 lg:grid-cols-4 lg:divide-x divide-blush">
+          {tiles.map((t) => (
+            <Link key={t.title} href={t.href} className="flex flex-col items-center gap-1.5 px-4 py-6 text-center text-wine hover:bg-blush-soft/50 transition-colors first:rounded-l-3xl last:rounded-r-3xl">
+              {t.icon}
+              <span className="mt-1 font-bold text-ink">{t.title}</span>
+              <span className="text-xs text-ink/60">{t.text}</span>
+            </Link>
           ))}
         </div>
       </section>
 
-      {/* Promo carousel */}
-      <section id="seasonal" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-        <PromoCarousel slides={promoSlides} />
+      {/* Most loved */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-6">
+        <div className="flex items-end justify-between gap-4">
+          <h2 className="font-display font-bold text-3xl sm:text-4xl text-wine-dark">
+            Our Most Loved Drinks <span className="text-berry">♡</span>
+          </h2>
+          <Link href="/menu" className="shrink-0 text-sm font-semibold text-berry hover:text-berry-dark">
+            See full menu ›
+          </Link>
+        </div>
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+          {loved.map((item) => (
+            <ProductCard key={item.id} item={item} />
+          ))}
+        </div>
       </section>
-
-      {/* Features */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-2 lg:grid-cols-4 gap-y-8 lg:gap-y-0 lg:divide-x divide-blush text-center">
-        {features.map((f) => (
-          <div key={f.title} className="flex flex-col items-center gap-2 px-4">
-            <f.Icon className="w-7 h-7 text-rose" />
-            <h4 className="font-display font-semibold text-maroon text-sm uppercase tracking-wide">
-              {f.title}
-            </h4>
-            <p className="text-xs text-ink/60">{f.text}</p>
-          </div>
-        ))}
-      </section>
-
-      {/* Promotion */}
-      {promotion.active && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          <div className="rounded-3xl bg-maroon text-cream px-6 sm:px-10 py-8 text-center">
-            <h3 className="font-display font-bold text-2xl">{promotion.title}</h3>
-            <p className="text-cream/70 mt-1 max-w-xl mx-auto">{promotion.description}</p>
-            <button className="mt-4 rounded-full bg-rose hover:bg-rose-dark text-white font-semibold px-5 py-2.5 text-sm transition-colors">
-              {promotion.cta}
-            </button>
-          </div>
-        </section>
-      )}
 
       {/* Visit us strip — real, live data (address/hours), not baked into a
           graphic, so it can't go stale and reflows properly on mobile. */}

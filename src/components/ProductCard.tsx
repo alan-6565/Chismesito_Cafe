@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Logo from "./Logo";
 import ProductOptionsModal from "./ProductOptionsModal";
@@ -9,112 +9,98 @@ import type { MenuItemFull } from "@/lib/menu";
 
 const badgeStyles: Record<string, string> = {
   New: "bg-emerald-600",
-  Popular: "bg-rose",
-  Seasonal: "bg-blush-soft text-maroon border border-rose",
+  Popular: "bg-berry",
+  Seasonal: "bg-wine",
 };
 
-// "stacked" = photo on top (homepage Trending grid); "row" = photo on the
-// left with a round + button (the /menu ordering grid).
-export default function ProductCard({
-  item,
-  layout = "stacked",
-}: {
-  item: MenuItemFull;
-  layout?: "stacked" | "row";
-}) {
+const FAV_KEY = "chismesito-favorites";
+const readFavs = (): string[] => {
+  try {
+    const v = JSON.parse(localStorage.getItem(FAV_KEY) ?? "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+};
+
+// The mockup's menu card: photo on top with a heart, name, price and a round
+// + that opens the options. Hearts are remembered on this device only.
+export default function ProductCard({ item }: { item: MenuItemFull; layout?: "stacked" | "row" }) {
   const [open, setOpen] = useState(false);
+  const [fav, setFav] = useState(false);
   const soldOut = !item.available;
 
-  const badge = item.badge && (
-    <span
-      className={`text-[10px] font-semibold uppercase tracking-wide text-white rounded-full px-2 py-1 ${badgeStyles[item.badge] ?? "bg-maroon"}`}
-    >
-      {item.badge}
-    </span>
-  );
+  useEffect(() => {
+    const t = setTimeout(() => setFav(readFavs().includes(item.slug)), 0);
+    return () => clearTimeout(t);
+  }, [item.slug]);
 
-  const modal = open && <ProductOptionsModal item={item} onClose={() => setOpen(false)} />;
-
-  if (layout === "row") {
-    return (
-      <>
-        <div className="rounded-2xl bg-white shadow-sm border border-blush/40 overflow-hidden flex min-h-44">
-          <div className="relative w-32 sm:w-36 shrink-0 bg-gradient-to-br from-blush-soft to-blush flex items-center justify-center">
-            {item.imageUrl ? (
-              <Image
-                src={item.imageUrl}
-                alt={item.name}
-                fill
-                sizes="(min-width: 640px) 144px, 128px"
-                className="object-cover"
-              />
-            ) : (
-              <Logo size="lg" />
-            )}
-            {badge && <div className="absolute top-2 left-2">{badge}</div>}
-          </div>
-          <div className="p-4 flex flex-col gap-2 flex-1 min-w-0">
-            <h3 className="font-display font-semibold text-maroon leading-snug">{item.name}</h3>
-            <p className="text-xs text-ink/60 leading-relaxed flex-1">{item.description}</p>
-            <div className="flex items-center justify-between pt-1">
-              <span className="font-display font-semibold text-lg text-maroon">
-                {formatCents(item.startingPriceCents)}
-              </span>
-              {soldOut ? (
-                <span className="rounded-full bg-ink/10 text-ink/50 text-xs font-semibold px-3 py-1.5">
-                  Sold Out
-                </span>
-              ) : (
-                <button
-                  onClick={() => setOpen(true)}
-                  aria-label={`Add ${item.name}`}
-                  className="w-9 h-9 rounded-full bg-rose hover:bg-rose-dark text-white text-xl leading-none flex items-center justify-center shadow-sm transition-colors"
-                >
-                  +
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-        {modal}
-      </>
-    );
-  }
+  const toggleFav = () => {
+    const next = fav ? readFavs().filter((s) => s !== item.slug) : [...readFavs(), item.slug];
+    setFav(!fav);
+    try {
+      localStorage.setItem(FAV_KEY, JSON.stringify(next));
+    } catch {}
+  };
 
   return (
     <>
-      <div className="rounded-2xl bg-white shadow-sm overflow-hidden flex flex-col">
-        {item.imageUrl && (
-          <div className="relative h-36 w-full">
+      <div className="group relative card-soft overflow-hidden flex flex-col transition-transform duration-300 hover:-translate-y-1">
+        <button
+          type="button"
+          onClick={() => !soldOut && setOpen(true)}
+          aria-label={`Customize ${item.name}`}
+          className="relative aspect-[4/3.2] w-full overflow-hidden bg-gradient-to-br from-blush-soft to-blush"
+        >
+          {item.imageUrl ? (
             <Image
               src={item.imageUrl}
               alt={item.name}
               fill
-              sizes="(min-width: 1024px) 20vw, 45vw"
-              className="object-cover"
+              sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
-            {badge && <div className="absolute top-2 left-2">{badge}</div>}
-          </div>
-        )}
-        <div className="p-4 flex flex-col gap-2 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="font-display font-semibold text-maroon leading-snug">{item.name}</h3>
-            {!item.imageUrl && badge}
-          </div>
-          <p className="text-xs text-ink/60 flex-1">{item.description}</p>
-          <div className="flex items-center justify-between pt-1">
-            <span className="font-semibold text-maroon">{formatCents(item.startingPriceCents)}</span>
-            <button
-              disabled={soldOut}
-              onClick={() => setOpen(true)}
-              className="rounded-full bg-rose hover:bg-rose-dark disabled:bg-ink/20 disabled:cursor-not-allowed text-white text-xs font-semibold px-4 py-2 transition-colors"
-            >
-              {soldOut ? "Sold Out" : "Order Now"}
-            </button>
+          ) : (
+            <span className="absolute inset-0 flex items-center justify-center">
+              <Logo size="lg" />
+            </span>
+          )}
+          {item.badge && (
+            <span className={`absolute top-3 left-3 text-[10px] font-bold uppercase tracking-wide text-white rounded-full px-2.5 py-1 ${badgeStyles[item.badge] ?? "bg-wine"}`}>
+              {item.badge}
+            </span>
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={toggleFav}
+          aria-pressed={fav}
+          aria-label={fav ? `Remove ${item.name} from favorites` : `Save ${item.name} to favorites`}
+          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow flex items-center justify-center text-berry active:scale-90 transition-transform"
+        >
+          <svg viewBox="0 0 24 24" className="w-5 h-5" fill={fav ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" aria-hidden>
+            <path d="M12 20s-7.5-4.6-9.8-9.2C.7 7.4 2.6 4 6.2 4c2 0 3.4 1 5.8 3.5C14.4 5 15.8 4 17.8 4c3.6 0 5.5 3.4 4 6.8C19.5 15.4 12 20 12 20Z" strokeLinejoin="round" />
+          </svg>
+        </button>
+        <div className="px-4 pt-3 pb-4 flex flex-1 flex-col">
+          <h3 className="font-bold text-ink leading-snug line-clamp-2">{item.name}</h3>
+          <div className="mt-auto pt-2 flex items-center justify-between gap-2">
+            <span className="font-bold text-ink">{formatCents(item.startingPriceCents)}</span>
+            {soldOut ? (
+              <span className="rounded-full bg-ink/10 text-ink/50 text-xs font-semibold px-3 py-1.5">Sold Out</span>
+            ) : (
+              <button
+                onClick={() => setOpen(true)}
+                aria-label={`Add ${item.name}`}
+                className="w-9 h-9 rounded-full bg-berry hover:bg-berry-dark text-white text-2xl leading-none flex items-center justify-center shadow-md shadow-berry/30 transition-colors"
+              >
+                +
+              </button>
+            )}
           </div>
         </div>
       </div>
-      {modal}
+      {open && <ProductOptionsModal item={item} onClose={() => setOpen(false)} />}
     </>
   );
 }

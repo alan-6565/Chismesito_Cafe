@@ -3,17 +3,19 @@
 import { useOrderingPause } from "@/lib/use-ordering-pause";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import OrderPanel from "@/components/OrderPanel";
-import { useCart } from "@/lib/cart-context";
+import Image from "next/image";
+import FloralCorner from "@/components/FloralCorner";
+import { summarizeCartLine, useCart } from "@/lib/cart-context";
+import { business } from "@/lib/data";
 import { formatCents } from "@/lib/money";
 import { cardFeeFor } from "@/lib/card-fee";
 import { formatTime, getPickupSlots, isOpenNow, type PickupDay } from "@/lib/hours";
-import { GiftIcon } from "@/components/icons";
+import { GiftIcon, PinIcon } from "@/components/icons";
 
 type AppliedGiftCard = { code: string; discountCents: number; balanceLabel: string; cartKey: string };
 
 export default function CheckoutPage() {
-  const { items, totalCents } = useCart();
+  const { items, totalCents, updateQuantity } = useCart();
   const { paused, backAt } = useOrderingPause();
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -127,7 +129,7 @@ export default function CheckoutPage() {
   };
 
   const inputClass =
-    "w-full rounded-xl border border-blush bg-white px-4 py-3 text-sm focus:outline-none focus:border-rose focus:ring-2 focus:ring-rose/15";
+    "w-full rounded-xl border border-blush bg-white px-4 py-3 text-sm focus:outline-none focus:border-berry focus:ring-2 focus:ring-berry/15";
 
   if (items.length === 0) {
     return (
@@ -148,245 +150,261 @@ export default function CheckoutPage() {
     );
   }
 
+  const asapLabel = openNow ? "~15 min" : "Closed now";
+  const stepNow = !name.trim() ? 2 : 3;
+  const steps = ["Order", "Pickup", "Payment"];
+  const card = "card-soft p-5 sm:p-6";
+
   return (
-    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-      <Link href="/menu" className="text-sm text-rose hover:text-rose-dark">
-        ‹ Back to menu
-      </Link>
+    <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <FloralCorner className="hidden lg:block absolute -right-24 bottom-0 w-72 rotate-180" />
 
-      <div className="mt-4 grid lg:grid-cols-[minmax(0,1fr)_360px] gap-8 items-start">
-        <section>
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose">Checkout</p>
-          <h1 className="mt-1 font-display font-bold text-3xl sm:text-4xl text-maroon">Almost Ready!</h1>
-          <p className="mt-2 text-ink/60">Tell us who&apos;s picking up, then pay securely online.</p>
+      {/* Steps */}
+      <ol className="mx-auto max-w-xl flex items-center gap-3">
+        {steps.map((label, i) => {
+          const n = i + 1;
+          const done = n < stepNow;
+          const on = n <= stepNow;
+          return (
+            <li key={label} className={`flex items-center gap-2.5 ${i < steps.length - 1 ? "flex-1" : ""}`}>
+              <span className={`w-8 h-8 shrink-0 rounded-full flex items-center justify-center text-sm font-bold ${on ? "bg-wine text-white" : "bg-ink/25 text-white"}`}>
+                {done ? "✓" : n}
+              </span>
+              <span className={`text-sm font-semibold ${on ? "text-ink" : "text-ink/50"}`}>{label}</span>
+              {i < steps.length - 1 && <span className="h-px flex-1 bg-ink/25" />}
+            </li>
+          );
+        })}
+      </ol>
 
-          <div className="mt-6 rounded-3xl bg-white shadow-sm border border-blush/40 p-6 flex flex-col gap-4">
-            <h2 className="font-display font-semibold text-lg text-maroon">Your Details</h2>
-            <div>
-              <label className="block text-sm font-medium text-maroon mb-1">Name</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className={inputClass} />
+      <div className="mt-8 grid lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] gap-6 items-start">
+        <div className="flex flex-col gap-6 min-w-0">
+          {/* Your order */}
+          <section className={card}>
+            <div className="flex items-baseline justify-between">
+              <h2 className="font-bold text-xl text-ink">Your Order ({items.reduce((n, i) => n + i.quantity, 0)})</h2>
+              <Link href="/menu" className="text-sm font-semibold text-wine underline hover:text-berry">
+                Edit
+              </Link>
             </div>
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-maroon mb-1">
-                  Phone <span className="text-ink/40 font-normal">(optional)</span>
-                </label>
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="For pickup updates"
-                  className={inputClass}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-maroon mb-1">
-                  Email <span className="text-ink/40 font-normal">(optional)</span>
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="For a confirmation email"
-                  className={inputClass}
-                />
-              </div>
-            </div>
-          </div>
+            <ul className="mt-4 divide-y divide-blush">
+              {items.map((item) => (
+                <li key={item.cartLineId} className="flex items-center gap-3 sm:gap-4 py-3 first:pt-0 last:pb-0">
+                  <div className="relative w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-2xl overflow-hidden bg-blush-soft">
+                    {item.image ? (
+                      <Image src={item.image} alt={item.name} fill sizes="80px" className="object-cover" />
+                    ) : (
+                      <Image src="/images/logo-clear.png" alt="" fill sizes="80px" className="object-contain p-2" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-ink leading-snug">{item.name}</p>
+                    {summarizeCartLine(item) && <p className="text-sm text-ink/60 line-clamp-2">{summarizeCartLine(item).replaceAll(", ", " · ")}</p>}
+                    {item.notes && <p className="text-xs text-ink/50 italic truncate">Note: {item.notes}</p>}
+                    <p className="mt-0.5 font-bold text-ink">{formatCents(item.unitPriceCents * item.quantity)}</p>
+                  </div>
+                  <div className="flex items-center rounded-full border border-blush bg-white shrink-0">
+                    <button onClick={() => updateQuantity(item.cartLineId, item.quantity - 1)} aria-label={`Decrease ${item.name} quantity`} className="w-8 h-8 text-lg text-ink">
+                      &minus;
+                    </button>
+                    <span className="w-5 text-center text-sm font-semibold">{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.cartLineId, item.quantity + 1)} aria-label={`Increase ${item.name} quantity`} className="w-8 h-8 text-lg text-ink">
+                      +
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
 
-          <div className="mt-6 rounded-3xl bg-white shadow-sm border border-blush/40 p-6 flex flex-col gap-4">
-            <h2 className="font-display font-semibold text-lg text-maroon">Pickup Time</h2>
-            {pickupDays.length === 0 ? (
-              <p className="text-sm text-ink/60">{openNow ? "We'll start on it right away." : "Online ordering opens again soon."}</p>
+          {/* Pickup */}
+          <section className={card}>
+            <h2 className="font-bold text-xl text-ink">Pickup Details</h2>
+            {pickupDays.length === 0 && !openNow ? (
+              <p className="mt-3 text-sm text-ink/60">Online ordering opens again soon.</p>
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="mt-4 grid grid-cols-2 gap-3">
                   {(["asap", "scheduled"] as const).map((mode) => {
-                    const disabled = mode === "asap" && !openNow;
+                    const disabled = mode === "asap" ? !openNow : pickupDays.length === 0;
+                    const on = effectiveMode === mode;
                     return (
                       <button
                         key={mode}
                         type="button"
                         disabled={disabled}
                         onClick={() => setPickupMode(mode)}
-                        className={`rounded-xl border px-4 py-3 text-sm font-semibold transition-colors disabled:opacity-40 ${
-                          effectiveMode === mode ? "border-rose bg-blush-soft text-rose" : "border-blush text-maroon hover:bg-cream-alt"
-                        }`}
+                        className={`rounded-2xl border px-4 py-3 text-center transition-colors disabled:opacity-40 ${on ? "border-berry bg-blush-soft" : "border-blush bg-white hover:border-berry/50"}`}
                       >
-                        {mode === "asap" ? (openNow ? "ASAP" : "ASAP · Closed now") : "Order Ahead"}
+                        <span className={`block font-bold ${on ? "text-berry" : "text-ink"}`}>{mode === "asap" ? "ASAP" : "Schedule"}</span>
+                        <span className="block text-xs text-ink/60">{mode === "asap" ? asapLabel : "Choose a time"}</span>
                       </button>
                     );
                   })}
                 </div>
-                {effectiveMode === "scheduled" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-maroon mb-1">Day</label>
-                      <select
-                        value={effectiveDate}
-                        onChange={(e) => {
-                          setPickupDate(e.target.value);
-                          setPickupTime("");
-                        }}
-                        className={inputClass}
-                      >
-                        {pickupDays.map((d) => (
-                          <option key={d.date} value={d.date}>
-                            {d.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-maroon mb-1">Time</label>
-                      <select value={effectiveTime} onChange={(e) => setPickupTime(e.target.value)} className={inputClass}>
-                        {selectedDay?.slots.map((t) => (
-                          <option key={t} value={t}>
-                            {formatTime(t)}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                {effectiveMode === "scheduled" && pickupDays.length > 0 && (
+                  <div className="mt-4 grid grid-cols-2 gap-3">
+                    <select
+                      value={effectiveDate}
+                      onChange={(e) => {
+                        setPickupDate(e.target.value);
+                        setPickupTime("");
+                      }}
+                      aria-label="Pickup day"
+                      className={inputClass}
+                    >
+                      {pickupDays.map((d) => (
+                        <option key={d.date} value={d.date}>
+                          {d.label}
+                        </option>
+                      ))}
+                    </select>
+                    <select value={effectiveTime} onChange={(e) => setPickupTime(e.target.value)} aria-label="Pickup time" className={inputClass}>
+                      {selectedDay?.slots.map((t) => (
+                        <option key={t} value={t}>
+                          {formatTime(t)}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 )}
               </>
             )}
-          </div>
+            <p className="mt-4 flex items-start gap-2.5">
+              <PinIcon className="w-5 h-5 shrink-0 mt-0.5 text-wine" />
+              <span>
+                <span className="block font-bold text-ink">Pickup at Chismesito Café</span>
+                <span className="text-sm text-ink/60">{business.streetAddress}, {business.city}, {business.state}</span>
+              </span>
+            </p>
+          </section>
 
-          <div className="mt-6 rounded-3xl bg-blush-soft/60 border border-blush p-6 flex gap-4">
-            <GiftIcon className="w-8 h-8 shrink-0 text-rose" />
+          {/* Who's picking up */}
+          <section className={card}>
+            <h2 className="font-bold text-xl text-ink">Your Info</h2>
+            <div className="mt-4 flex flex-col gap-3">
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name (for pickup)" autoComplete="name" aria-label="Name" className={inputClass} />
+              <div className="grid sm:grid-cols-2 gap-3">
+                <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="Phone (optional)" type="tel" autoComplete="tel" aria-label="Phone" className={inputClass} />
+                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email (optional)" autoComplete="email" aria-label="Email" className={inputClass} />
+              </div>
+            </div>
+          </section>
+
+          {/* Giveaway */}
+          <section className="rounded-3xl bg-blush-soft/70 border border-blush p-5 sm:p-6 flex gap-4">
+            <GiftIcon className="w-8 h-8 shrink-0 text-berry" />
             <div className="flex-1">
-              <h2 className="font-display font-semibold text-lg text-maroon">Enter our monthly giveaway?</h2>
-              <p className="mt-1 text-sm text-ink/60">
-                One winner gets 2 free drinks (any size), picked at the start of every
-                month.
-              </p>
-              <label className="mt-4 flex items-center gap-3 cursor-pointer">
+              <h2 className="font-bold text-lg text-ink">Enter our monthly giveaway?</h2>
+              <p className="mt-1 text-sm text-ink/60">One winner gets 2 free drinks (any size), picked at the start of every month.</p>
+              <label className="mt-3 flex items-center gap-3 cursor-pointer">
                 <button
                   type="button"
                   role="switch"
                   aria-checked={giveawayOptIn}
                   onClick={() => setGiveawayOptIn((v) => !v)}
-                  className={`relative w-11 h-6 shrink-0 rounded-full transition-colors ${giveawayOptIn ? "bg-rose" : "bg-ink/20"}`}
+                  className={`relative w-11 h-6 shrink-0 rounded-full transition-colors ${giveawayOptIn ? "bg-berry" : "bg-ink/20"}`}
                 >
-                  <span
-                    className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${
-                      giveawayOptIn ? "translate-x-5" : ""
-                    }`}
-                  />
+                  <span className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${giveawayOptIn ? "translate-x-5" : ""}`} />
                 </button>
-                <span className="text-sm font-medium text-maroon">Yes, enter me in this month&apos;s giveaway</span>
+                <span className="text-sm font-medium text-ink">Yes, enter me in this month&apos;s giveaway</span>
               </label>
-              <p className="mt-3 text-xs text-ink/50">
-                No purchase necessary — anyone can{" "}
-                <Link href="/#giveaway" target="_blank" className="underline hover:text-rose">
+              <p className="mt-2 text-xs text-ink/50">
+                No purchase necessary, anyone can{" "}
+                <Link href="/giveaway" target="_blank" className="underline hover:text-berry">
                   enter for free
                 </Link>
-                . Every order adds an entry.{" "}
-                <Link href="/giveaway/rules" target="_blank" className="underline hover:text-rose">
+                .{" "}
+                <Link href="/giveaway/rules" target="_blank" className="underline hover:text-berry">
                   Official rules
                 </Link>
-                .
               </p>
             </div>
-          </div>
+          </section>
+        </div>
 
-          <div className="mt-6 rounded-3xl bg-white shadow-sm border border-blush/40 p-6 flex flex-col gap-3">
-            <h2 className="font-display font-semibold text-lg text-maroon">Payment</h2>
+        {/* Summary */}
+        <aside className={`${card} lg:sticky lg:top-28 flex flex-col gap-4`}>
+          <h2 className="font-bold text-xl text-ink">Order Summary</h2>
 
-            {appliedGift ? (
-              <div className="flex items-center justify-between gap-3 rounded-xl border border-blush bg-cream-alt/60 px-4 py-3">
-                <div className="text-sm">
-                  <p className="font-semibold text-maroon">Gift card {appliedGift.code}</p>
-                  <p className="text-xs text-ink/50">Balance: {appliedGift.balanceLabel}</p>
-                </div>
+          {appliedGift ? (
+            <div className="flex items-center justify-between gap-3 rounded-2xl border border-blush bg-white px-4 py-3">
+              <div className="text-sm">
+                <p className="font-semibold text-ink">Gift card {appliedGift.code}</p>
+                <p className="text-xs text-ink/50">Balance: {appliedGift.balanceLabel}</p>
+              </div>
+              <button type="button" onClick={() => setGiftCard(null)} className="text-xs font-semibold text-ink/50 hover:text-berry">
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div>
+              <div className="flex gap-2">
+                <input
+                  value={giftCodeInput}
+                  onChange={(e) => setGiftCodeInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && applyGiftCard()}
+                  placeholder="Gift card code"
+                  aria-label="Gift card code"
+                  className={`${inputClass} uppercase tracking-wider placeholder:normal-case placeholder:tracking-normal`}
+                />
                 <button
                   type="button"
-                  onClick={() => setGiftCard(null)}
-                  className="text-xs font-semibold text-ink/50 hover:text-rose"
+                  onClick={applyGiftCard}
+                  disabled={applyingGift || !giftCodeInput.trim()}
+                  className="shrink-0 rounded-xl border border-wine text-wine font-semibold px-4 text-sm hover:bg-wine hover:text-white disabled:opacity-40 transition-colors"
                 >
-                  Remove
+                  {applyingGift ? "..." : "Apply"}
                 </button>
               </div>
-            ) : (
-              <div>
-                <label className="block text-sm font-medium text-maroon mb-1">
-                  Gift card <span className="text-ink/40 font-normal">(optional)</span>
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    value={giftCodeInput}
-                    onChange={(e) => setGiftCodeInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && applyGiftCard()}
-                    placeholder="XXXX-XXXX"
-                    className={`${inputClass} uppercase font-mono tracking-wider`}
-                  />
-                  <button
-                    type="button"
-                    onClick={applyGiftCard}
-                    disabled={applyingGift || !giftCodeInput.trim()}
-                    className="shrink-0 rounded-xl border border-maroon text-maroon font-semibold px-4 text-sm hover:bg-maroon hover:text-cream disabled:opacity-40 transition-colors"
-                  >
-                    {applyingGift ? "..." : "Apply"}
-                  </button>
-                </div>
-                {giftError && <p className="mt-1.5 text-xs text-red-600">{giftError}</p>}
-                {giftCard && !appliedGift && (
-                  <p className="mt-1.5 text-xs text-ink/50">Your order changed — please apply your gift card again.</p>
-                )}
+              {giftError && <p className="mt-1.5 text-xs text-red-600">{giftError}</p>}
+              {giftCard && !appliedGift && <p className="mt-1.5 text-xs text-ink/50">Your order changed, please apply your gift card again.</p>}
+            </div>
+          )}
+
+          <dl className="flex flex-col gap-2 text-ink/80">
+            <div className="flex justify-between">
+              <dt>Subtotal</dt>
+              <dd>{formatCents(totalCents)}</dd>
+            </div>
+            {appliedGift && (
+              <div className="flex justify-between">
+                <dt>Gift card</dt>
+                <dd>&minus;{formatCents(appliedGift.discountCents)}</dd>
               </div>
             )}
-
-            <div className="flex flex-col gap-1 text-sm border-t border-blush pt-3">
-              <div className="flex justify-between text-ink/60">
-                <span>Subtotal</span>
-                <span>{formatCents(totalCents)}</span>
+            {cardFeeCents > 0 && (
+              <div className="flex justify-between">
+                <dt>Card processing fee</dt>
+                <dd>{formatCents(cardFeeCents)}</dd>
               </div>
-              {appliedGift && (
-                <div className="flex justify-between text-ink/60">
-                  <span>Gift card</span>
-                  <span>&minus;{formatCents(appliedGift.discountCents)}</span>
-                </div>
-              )}
-              {cardFeeCents > 0 && (
-                <div className="flex justify-between text-ink/60">
-                  <span>Card processing fee</span>
-                  <span>{formatCents(cardFeeCents)}</span>
-                </div>
-              )}
-              <div className="flex justify-between font-semibold text-maroon">
-                <span>Total</span>
-                <span>{formatCents(amountDueCents)}</span>
-              </div>
-            </div>
+            )}
+          </dl>
+          <div className="flex items-baseline justify-between border-t border-blush pt-4">
+            <span className="text-xl font-bold text-ink">Total</span>
+            <span className="text-2xl font-bold text-ink">{formatCents(amountDueCents)}</span>
+          </div>
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
 
-            <button
-              onClick={submitOnlinePayment}
-              disabled={submitting || paused}
-              className="rounded-full bg-rose hover:bg-rose-dark disabled:opacity-60 text-white font-semibold px-6 py-3.5 text-sm shadow-sm transition-colors"
-            >
-              {paused
-                ? `Ordering unavailable until ${backAt}`
-                : submitting
+          <button
+            onClick={submitOnlinePayment}
+            disabled={submitting || paused}
+            className="rounded-full bg-wine hover:bg-wine-dark disabled:opacity-60 text-white font-semibold px-6 py-4 shadow-lg shadow-wine/20 transition-colors"
+          >
+            {paused
+              ? `Ordering unavailable until ${backAt}`
+              : submitting
                 ? amountDueCents === 0
                   ? "Placing your order..."
                   : "Redirecting to payment..."
                 : amountDueCents === 0
-                  ? "Place Order ›"
-                  : `Pay ${formatCents(amountDueCents)} ›`}
-            </button>
-            <p className="text-xs text-ink/50 text-center">
-              {amountDueCents === 0
-                ? "Your gift card covers this whole order."
-                : "All orders are paid online when you order, so it’s ready to grab when you get here."}
-            </p>
-          </div>
-        </section>
-
-        <aside className="lg:sticky lg:top-24">
-          <OrderPanel />
-          <p className="mt-6 font-script text-2xl text-rose text-center -rotate-6">Un Cafecito Para Todo ♡</p>
+                  ? "Place Order"
+                  : `Pay with Card · ${formatCents(amountDueCents)}`}
+          </button>
+          <p className="text-xs text-ink/50 text-center">
+            {amountDueCents === 0 ? "Your gift card covers this whole order." : "Secure payment by Stripe. Your order is ready to grab when you get here."}
+          </p>
         </aside>
       </div>
     </div>

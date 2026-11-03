@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Analytics } from "@vercel/analytics/next";
-import { Fraunces, Dancing_Script, Poppins } from "next/font/google";
+import { Fraunces, Dancing_Script, Poppins, Lilita_One } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,6 +16,13 @@ const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin"],
   weight: ["600", "700", "900"],
+});
+
+// Bubbly headline font for the giveaway banner
+const lilita = Lilita_One({
+  variable: "--font-lilita",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 const dancing = Dancing_Script({
@@ -57,7 +64,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${dancing.variable} ${poppins.variable} h-full antialiased`}
+      className={`${fraunces.variable} ${dancing.variable} ${lilita.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-cream text-ink">
         <StructuredData />

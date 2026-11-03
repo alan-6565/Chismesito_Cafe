@@ -1,142 +1,142 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import FloralCorner from "@/components/FloralCorner";
 import ProductCard from "@/components/ProductCard";
-import OrderPanel from "@/components/OrderPanel";
-import { CupIcon, GridIcon, HeartIcon, IcedCupIcon, LeafIcon, PastryIcon, StarIcon } from "@/components/icons";
-import { useCart } from "@/lib/cart-context";
-import { formatCents } from "@/lib/money";
+import { SearchIcon, StarIcon } from "@/components/icons";
 import type { MenuItemFull } from "@/lib/menu";
 
 const FEATURED = "Featured";
 const ALL = "Full Menu";
+const SORTS = { menu: "Menu order", low: "Price: low to high", high: "Price: high to low", az: "A to Z" } as const;
+type Sort = keyof typeof SORTS;
 
-function CategoryIcon({ category, className }: { category: string; className: string }) {
-  if (category === FEATURED) return <StarIcon className={className} />;
-  if (category === ALL) return <GridIcon className={className} />;
-  if (/signature/i.test(category)) return <HeartIcon className={className} />;
-  if (/matcha|chai/i.test(category)) return <LeafIcon className={className} />;
-  if (/iced|refresher|juice|sago/i.test(category)) return <IcedCupIcon className={className} />;
-  if (/pastr|snack/i.test(category)) return <PastryIcon className={className} />;
-  return <CupIcon className={className} />;
-}
+const plain = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-const headings: Record<string, { eyebrow: string; title: string; subtitle: string }> = {
-  [FEATURED]: {
-    eyebrow: "Featured",
-    title: "Our Most Loved Drinks",
-    subtitle: "Handcrafted with care, community and a whole lot of chisme.",
-  },
-  [ALL]: {
-    eyebrow: "Full Menu",
-    title: "Everything We Make",
-    subtitle: "Handcrafted daily.",
-  },
-};
-
-export default function MenuBrowser({
-  items,
-  categories,
-}: {
-  items: MenuItemFull[];
-  categories: string[];
-}) {
+export default function MenuBrowser({ items, categories }: { items: MenuItemFull[]; categories: string[] }) {
   const hasFeatured = items.some((i) => i.featured);
   const tabs = [...(hasFeatured ? [FEATURED] : []), ALL, ...categories];
   const [active, setActive] = useState<string>(tabs[0]);
-  const { items: cartItems, totalCents } = useCart();
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<Sort>("menu");
+  const [sortOpen, setSortOpen] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
 
-  const visible =
-    active === FEATURED
+  // The navbar's search icon links here with ?search=1
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("search")) searchRef.current?.focus();
+  }, []);
+
+  const q = plain(query.trim());
+  const base = q
+    ? items.filter((i) => plain(`${i.name} ${i.description} ${i.category}`).includes(q))
+    : active === FEATURED
       ? items.filter((i) => i.featured)
       : active === ALL
-        ? // Grouped by section (items arrive sorted by name) so the full
-          // menu reads in the same order as the category tabs.
-          [...items].sort((a, b) => categories.indexOf(a.category) - categories.indexOf(b.category))
+        ? [...items].sort((a, b) => categories.indexOf(a.category) - categories.indexOf(b.category))
         : items.filter((i) => i.category === active);
-
-  const heading = headings[active] ?? {
-    eyebrow: "Menu",
-    title: active,
-    subtitle: "Handcrafted daily.",
-  };
+  const visible =
+    sort === "menu"
+      ? base
+      : [...base].sort((a, b) =>
+          sort === "az" ? a.name.localeCompare(b.name) : sort === "low" ? a.startingPriceCents - b.startingPriceCents : b.startingPriceCents - a.startingPriceCents
+        );
 
   return (
-    <div className="grid lg:grid-cols-[210px_minmax(0,1fr)_320px] gap-6 xl:gap-8">
-      {/* Category sidebar (desktop) */}
-      <aside className="hidden lg:block">
-        <nav className="sticky top-24 flex flex-col gap-1">
-          {tabs.map((c) => (
-            <button
-              key={c}
-              onClick={() => setActive(c)}
-              className={`flex items-center gap-3 rounded-xl px-4 py-3 text-sm text-left transition-colors ${
-                active === c
-                  ? "bg-maroon text-cream font-semibold"
-                  : "text-maroon hover:bg-blush-soft"
-              }`}
-            >
-              <CategoryIcon category={c} className="w-5 h-5 shrink-0" />
-              {c}
-            </button>
-          ))}
-          <p className="mt-8 pt-6 border-t border-blush font-script text-2xl leading-tight text-rose -rotate-6 text-center">
-            Coffee, Good Vibes
-            <br />& a Little Chisme ♡
-          </p>
-        </nav>
-      </aside>
+    <div>
+      {/* Heading with the flower corner from the mockup */}
+      <div className="relative">
+        <FloralCorner className="hidden sm:block absolute -right-4 sm:-right-8 -top-10 w-40 sm:w-64" />
+        <p className="relative text-sm font-bold uppercase tracking-[0.18em] text-wine">Our Menu</p>
+        <h1 className="relative mt-1 font-display font-bold text-4xl sm:text-5xl text-wine-dark">Drinks, Pastries &amp; More</h1>
+        <p className="relative mt-2 text-ink/70 sm:text-lg">Handcrafted drinks, fresh pastries, and a whole lot of chisme.</p>
+      </div>
 
-      <section className="min-w-0">
-        {/* Category chips (mobile/tablet) */}
-        <div className="lg:hidden flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 mb-6">
-          {tabs.map((c) => (
+      {/* Category pills */}
+      <div className="mt-6 flex gap-3 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [scrollbar-width:none]">
+        {tabs.map((c) => {
+          const on = active === c && !q;
+          return (
             <button
               key={c}
-              onClick={() => setActive(c)}
-              className={`shrink-0 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-colors ${
-                active === c
-                  ? "bg-maroon text-cream"
-                  : "bg-white text-maroon border border-blush hover:bg-blush-soft"
+              onClick={() => {
+                setActive(c);
+                setQuery("");
+              }}
+              className={`shrink-0 flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-colors shadow-sm ${
+                on ? "bg-wine text-white shadow-wine/25" : "bg-white text-ink hover:text-berry border border-blush/60"
               }`}
             >
-              <CategoryIcon category={c} className="w-4 h-4" />
+              {c === FEATURED && <StarIcon className="w-4 h-4" />}
               {c}
             </button>
-          ))}
+          );
+        })}
+      </div>
+
+      {/* Search + sort */}
+      <div className="mt-4 flex gap-3">
+        <label className="relative flex-1">
+          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink/50" />
+          <input
+            ref={searchRef}
+            type="search"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search our menu..."
+            aria-label="Search our menu"
+            className="w-full rounded-full bg-white border border-blush/60 shadow-sm pl-12 pr-5 py-3.5 text-sm focus:outline-none focus:border-berry"
+          />
+        </label>
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setSortOpen((o) => !o)}
+            aria-label="Sort the menu"
+            aria-expanded={sortOpen}
+            className={`w-[52px] h-full rounded-2xl bg-white border shadow-sm flex items-center justify-center transition-colors ${sort !== "menu" ? "border-berry text-berry" : "border-blush/60 text-ink"}`}
+          >
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden>
+              <path d="M4 7h10M18 7h2M4 17h4M12 17h8" />
+              <circle cx="16" cy="7" r="2" />
+              <circle cx="10" cy="17" r="2" />
+            </svg>
+          </button>
+          {sortOpen && (
+            <div className="absolute right-0 top-full mt-2 z-20 w-52 rounded-2xl bg-white border border-blush shadow-xl py-1">
+              {(Object.keys(SORTS) as Sort[]).map((k) => (
+                <button
+                  key={k}
+                  onClick={() => {
+                    setSort(k);
+                    setSortOpen(false);
+                  }}
+                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-blush-soft ${sort === k ? "font-semibold text-berry" : "text-ink"}`}
+                >
+                  {sort === k ? "✓ " : ""}
+                  {SORTS[k]}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+      </div>
 
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-rose">{heading.eyebrow}</p>
-        <h1 className="mt-1 font-display font-bold text-3xl sm:text-4xl text-maroon">{heading.title}</h1>
-        <p className="mt-2 text-ink/60">{heading.subtitle}</p>
+      {q && (
+        <p className="mt-6 text-sm text-ink/60">
+          {visible.length} result{visible.length === 1 ? "" : "s"} for &ldquo;{query.trim()}&rdquo;
+        </p>
+      )}
 
-        <div className="mt-6 grid sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-4">
+      {visible.length === 0 ? (
+        <p className="mt-10 text-center text-ink/60">Nothing matches that yet. Try another word ♡</p>
+      ) : (
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {visible.map((item) => (
-            <ProductCard key={item.id} item={item} layout="row" />
+            <ProductCard key={item.id} item={item} />
           ))}
         </div>
-      </section>
-
-      {/* Order sidebar (desktop) */}
-      <aside className="hidden lg:block">
-        <div className="sticky top-24">
-          <OrderPanel>
-            <Link
-              href="/checkout"
-              aria-disabled={cartItems.length === 0}
-              className={`mt-4 rounded-full text-center font-semibold px-5 py-3.5 text-sm transition-colors ${
-                cartItems.length === 0
-                  ? "bg-ink/15 text-ink/40 pointer-events-none"
-                  : "bg-rose hover:bg-rose-dark text-white shadow-sm"
-              }`}
-            >
-              Checkout · {formatCents(totalCents)} ›
-            </Link>
-          </OrderPanel>
-          <p className="mt-6 font-script text-2xl text-rose text-center -rotate-6">Un Cafecito Para Todo ♡</p>
-        </div>
-      </aside>
+      )}
     </div>
   );
 }

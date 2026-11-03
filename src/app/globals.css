@@ -10,6 +10,11 @@
   --color-maroon: #451820;
   --color-maroon-soft: #6b2c37;
   --color-ink: #2c1116;
+  /* From the website mockup: the deep wine band and the berry buttons */
+  --color-wine: #7e1533;
+  --color-wine-dark: #5f0f26;
+  --color-berry: #c41e57;
+  --color-berry-dark: #a31646;
 }
 
 @theme inline {
@@ -22,6 +27,11 @@
   --color-maroon: var(--color-maroon);
   --color-maroon-soft: var(--color-maroon-soft);
   --color-ink: var(--color-ink);
+  --color-wine: var(--color-wine);
+  --color-wine-dark: var(--color-wine-dark);
+  --color-berry: var(--color-berry);
+  --color-berry-dark: var(--color-berry-dark);
+  --font-bubble: var(--font-lilita);
   --font-display: var(--font-fraunces);
   --font-script: var(--font-dancing);
   --font-body: var(--font-poppins);
@@ -39,4 +49,16 @@ body {
 
 .font-script {
   font-family: var(--font-dancing);
+}
+
+.font-bubble {
+  font-family: var(--font-lilita);
+}
+
+/* Soft card look used across the redesigned pages */
+.card-soft {
+  background: #fffaf6;
+  border: 1px solid rgb(247 217 222 / 0.7);
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 30px rgb(126 21 51 / 0.07);
 }
