@@ -206,3 +206,16 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .drink-wave { animation: none; }
 }
+
+/* Papel picado sway (Our Story) */
+@keyframes sway {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+.papel {
+  transform-origin: 50% 0;
+  animation: sway 4s ease-in-out var(--sway-delay, 0s) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .papel { animation: none; }
+}
