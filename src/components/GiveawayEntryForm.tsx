@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Confetti from "@/components/rewards/Confetti";
 
 export default function GiveawayEntryForm() {
   const [name, setName] = useState("");
@@ -35,8 +36,9 @@ export default function GiveawayEntryForm() {
 
   if (result) {
     return (
-      <div className="rounded-2xl bg-blush-soft/60 border border-blush px-6 py-8 text-center">
-        <p className="font-display font-bold text-xl text-maroon">
+      <div className="relative rounded-2xl bg-blush-soft/60 border border-blush px-6 py-8 text-center">
+        {result === "entered" && <Confetti />}
+        <p className="relative font-display font-bold text-xl text-maroon">
           {result === "entered" ? "You're entered! 🎉" : "You've already used your free entry this month ♡"}
         </p>
         <p className="mt-1 text-sm text-ink/60">
@@ -102,7 +104,7 @@ export default function GiveawayEntryForm() {
       <button
         type="submit"
         disabled={submitting}
-        className="rounded-full bg-maroon hover:bg-maroon/90 disabled:opacity-60 text-cream font-semibold px-6 py-3.5 text-sm transition-colors"
+        className="rounded-full bg-berry hover:bg-berry-dark disabled:opacity-60 text-white font-semibold px-6 py-3.5 shadow-lg shadow-berry/25 transition-all hover:-translate-y-0.5"
       >
         {submitting ? "Entering..." : "Enter the Giveaway"}
       </button>

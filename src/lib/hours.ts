@@ -119,7 +119,7 @@ export function getPickupSlots(now: Date = new Date()): PickupDay[] {
 }
 
 /** Converts a Pacific wall-clock date + "HH:MM" into a UTC ISO string. */
-function pacificToISO(ymd: string, hhmm: string): string {
+export function pacificToISO(ymd: string, hhmm: string): string {
   const asUTC = new Date(`${ymd}T${hhmm}:00Z`);
   // Pacific's offset from UTC at (roughly) that moment, DST-aware.
   const tzName = new Intl.DateTimeFormat("en-US", { timeZone: TIMEZONE, timeZoneName: "longOffset" })
