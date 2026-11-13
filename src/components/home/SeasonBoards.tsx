@@ -9,7 +9,8 @@ import type { MenuItemFull } from "@/lib/menu";
 // drinks come live from the menu, so adding/removing items in /admin/menu
 // updates these too. A board hides itself when its category is empty.
 
-type Drink = { name: string; description: string; fromCents: number };
+type Size = { label: string; priceCents: number };
+type Drink = { name: string; description: string; fromCents: number; sizes: Size[] };
 
 // Same order as the cafe's posters; anything not listed goes after, A–Z.
 const POSTER_ORDER = [
@@ -40,21 +41,28 @@ const POSTER_NOTES: Record<string, string> = {
   "Pumpkin Spice Matcha": "Premium matcha, pumpkin spice & milk.",
 };
 
-/** Holiday drinks exist as "(Iced)" and "(Hot)" twins — show each once, from its lowest price. */
+/**
+ * Holiday drinks exist as "(Iced)" and "(Hot)" twins — show each once. The
+ * boards list the iced sizes (16/20/24 oz, like the cafe's posters); the hot
+ * twin is only used if a drink has no iced version.
+ */
 function collapse(items: MenuItemFull[]): Drink[] {
-  const map = new Map<string, Drink>();
+  const map = new Map<string, Drink & { hot: boolean }>();
   for (const i of items) {
     if (!i.available) continue;
+    const hot = /\(Hot\)\s*$/i.test(i.name);
     const name = i.name.replace(/\s*\((Iced|Hot)\)\s*$/i, "").trim();
+    const sizes = [...i.sizes].map((s) => ({ label: s.label, priceCents: s.priceCents }));
+    const fromCents = sizes.length ? Math.min(...sizes.map((s) => s.priceCents)) : i.startingPriceCents;
     const prev = map.get(name);
-    if (!prev) map.set(name, { name, description: i.description || POSTER_NOTES[name] || "", fromCents: i.startingPriceCents });
-    else {
-      prev.fromCents = Math.min(prev.fromCents, i.startingPriceCents);
-      if (!prev.description) prev.description = i.description;
-    }
+    if (!prev || (prev.hot && !hot)) {
+      map.set(name, { name, description: i.description || prev?.description || POSTER_NOTES[name] || "", fromCents, sizes, hot });
+    } else if (!prev.description) prev.description = i.description;
   }
   return [...map.values()].sort((a, b) => rank(a.name) - rank(b.name) || a.name.localeCompare(b.name));
 }
+
+const shortOz = (label: string) => label.replace(/\s*oz$/i, "oz");
 
 function Snowflake({ className = "" }: { className?: string }) {
   return (
@@ -121,11 +129,23 @@ function Board({
             <Reveal as="li" key={d.name} delay={i * 60} className="text-center">
               <span className="block font-display font-bold uppercase tracking-wide text-[15px] sm:text-base leading-tight">{d.name}</span>
               <span className="mt-0.5 block text-[13px] text-ink/70 leading-snug">
-                {d.description ? `${d.description} · ` : ""}
-                <span className="font-semibold" style={{ color: ink }}>
-                  from {formatCents(d.fromCents)}
-                </span>
+                {d.description}
+                {d.sizes.length === 0 && (
+                  <span className="font-semibold" style={{ color: ink }}>
+                    {d.description ? " · " : ""}
+                    {formatCents(d.fromCents)}
+                  </span>
+                )}
               </span>
+              {d.sizes.length > 0 && (
+                <span className="mt-1 flex flex-wrap justify-center gap-x-3 gap-y-0.5 text-[13px] font-semibold" style={{ color: ink }}>
+                  {d.sizes.map((s) => (
+                    <span key={s.label} className="whitespace-nowrap">
+                      {shortOz(s.label)} <span className="opacity-60">·</span> {formatCents(s.priceCents)}
+                    </span>
+                  ))}
+                </span>
+              )}
             </Reveal>
           ))}
         </ul>
@@ -167,7 +187,7 @@ export default function SeasonBoards({ items }: { items: MenuItemFull[] }) {
               title="Holiday Menu"
               icon={<Snowflake className="w-full h-full" />}
               drinks={holiday}
-              footnote="Hot 12 & 16 oz · Iced 16, 20 & 24 oz"
+              footnote="Iced · 16, 20 & 24 oz"
               href={`/menu?category=${encodeURIComponent("Holiday Menu")}`}
               cta="Order Holiday Drinks"
               tilt={-1.2}
