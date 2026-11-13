@@ -62,3 +62,135 @@ body {
   border-radius: 1.5rem;
   box-shadow: 0 8px 30px rgb(126 21 51 / 0.07);
 }
+
+/* ───────────────────────── Seasonal theme ─────────────────────────
+   <html data-season="holiday|fall|classic"> is set by a tiny inline script
+   in the layout (so even pre-built pages switch on the right day). The
+   stripe colors mirror the cafe's own Instagram menu posters. */
+:root {
+  --stripe-a: var(--color-wine);
+  --stripe-b: #f5dfd6;
+  --season-accent: var(--color-berry);
+}
+:root[data-season="holiday"] {
+  --stripe-a: #8e1a24;
+  --stripe-b: #f4dccf;
+  --season-accent: #b3202f;
+}
+:root[data-season="fall"] {
+  --stripe-a: #d99b4e;
+  --stripe-b: #f6e3c8;
+  --season-accent: #a8642a;
+}
+
+/* Candy-stripe awning with a scalloped bottom edge */
+.awning {
+  position: relative;
+  background: repeating-linear-gradient(90deg, var(--stripe-a) 0 22px, var(--stripe-b) 22px 44px);
+}
+.awning-scallop {
+  height: 14px;
+  background:
+    radial-gradient(circle at 11px 0, var(--stripe-a) 10px, transparent 10.5px) 0 0 / 44px 14px repeat-x,
+    radial-gradient(circle at 33px 0, var(--stripe-b) 10px, transparent 10.5px) 0 0 / 44px 14px repeat-x;
+  filter: drop-shadow(0 3px 2px rgb(60 10 20 / 0.12));
+}
+
+/* Vertical poster stripes, like the IG menu boards */
+.poster-stripes {
+  background: repeating-linear-gradient(90deg, var(--ps-a) 0 26px, var(--ps-b) 26px 52px);
+}
+
+/* Show/hide by season */
+.only-holiday,
+.only-fall {
+  display: none;
+}
+:root[data-season="holiday"] .only-holiday,
+:root[data-season="fall"] .only-fall {
+  display: block;
+}
+
+/* Falling snow / leaves */
+@keyframes fall {
+  0% { transform: translate3d(0, -10vh, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translate3d(var(--drift, 30px), 110vh, 0) rotate(var(--spin, 200deg)); opacity: 0.9; }
+}
+.flake {
+  position: absolute;
+  top: 0;
+  will-change: transform;
+  animation: fall var(--dur, 12s) linear var(--delay, 0s) infinite;
+}
+
+/* Steam curling off a cup */
+@keyframes steam {
+  0% { transform: translateY(6px) scaleX(1); opacity: 0; }
+  30% { opacity: 0.85; }
+  100% { transform: translateY(-26px) scaleX(1.4); opacity: 0; }
+}
+.steam path {
+  animation: steam 3.2s ease-out infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
+}
+.steam path:nth-child(2) { animation-delay: 1.1s; }
+.steam path:nth-child(3) { animation-delay: 2.1s; }
+
+/* Chisme ticker */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee {
+  animation: marquee 38s linear infinite;
+}
+.marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Gentle bob for floating bits */
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-8px) rotate(var(--r, 0deg)); }
+}
+.bob {
+  animation: bob 5s ease-in-out infinite;
+}
+
+/* Scroll reveal (see components/Reveal.tsx) */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px) scale(0.98);
+  transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+/* Speech bubbles pop instead of slide */
+.reveal.pop {
+  transform: scale(0.6) rotate(var(--r, -4deg));
+  transition-timing-function: ease, cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.reveal.pop.is-in {
+  transform: rotate(var(--r, -4deg));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flake,
+  .steam path,
+  .marquee,
+  .bob {
+    animation: none !important;
+  }
+  .flake { display: none; }
+  .reveal,
+  .reveal.pop {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}

@@ -52,8 +52,11 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40">
-      {/* The wine band across the top, like the mockup */}
-      <div className="h-2.5 bg-gradient-to-r from-wine-dark via-wine to-wine-dark" />
+      {/* Striped awning across the top — colors follow the season (see globals.css) */}
+      <div className="relative z-10">
+        <div className="awning h-4" />
+        <div className="awning-scallop absolute inset-x-0 top-full pointer-events-none" aria-hidden />
+      </div>
       <div className="bg-cream/95 backdrop-blur shadow-[0_6px_20px_rgba(126,21,51,0.08)]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6 h-20">
           <Link href="/" aria-label="Chismesito Cafe home" className="relative shrink-0 w-28 h-[4.25rem]">

@@ -23,9 +23,15 @@ export default function MenuBrowser({ items, categories }: { items: MenuItemFull
   const searchRef = useRef<HTMLInputElement>(null);
 
   // The navbar's search icon links here with ?search=1
+  // ?category=Holiday%20Menu (from the home page boards) opens that tab
   useEffect(() => {
-    if (new URLSearchParams(location.search).get("search")) searchRef.current?.focus();
-  }, []);
+    const params = new URLSearchParams(location.search);
+    if (params.get("search")) searchRef.current?.focus();
+    const cat = params.get("category");
+    if (!cat || !categories.includes(cat)) return;
+    const t = setTimeout(() => setActive(cat), 0);
+    return () => clearTimeout(t);
+  }, [categories]);
 
   const q = plain(query.trim());
   const base = q

@@ -2,6 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import ProductCard from "@/components/ProductCard";
 import HomeHero from "@/components/HomeHero";
+import Reveal from "@/components/Reveal";
+import SeasonalSky from "@/components/SeasonalSky";
+import ChismeTicker from "@/components/home/ChismeTicker";
+import SeasonBoards from "@/components/home/SeasonBoards";
+import ChismeCorner from "@/components/home/ChismeCorner";
+import HoursBoard from "@/components/home/HoursBoard";
 import { InstagramIcon } from "@/components/icons";
 import { business } from "@/lib/data";
 import { getMenu } from "@/lib/menu";
@@ -60,81 +66,108 @@ const tiles = [
 
 export default async function Home() {
   const items = await getMenu();
-  const loved = items.filter((i) => i.featured).slice(0, 8);
+  const loved = items.filter((i) => i.featured).slice(0, 10);
   const month = formatMonth(giveawayMonth()).split(" ")[0];
 
   return (
     <div>
       <h2 className="sr-only">{business.tagline}</h2>
-      <HomeHero month={month} />
+      <div className="relative">
+        <HomeHero month={month} />
+        <SeasonalSky density={0.7} />
+      </div>
+
+      <ChismeTicker />
 
       {/* Shortcuts */}
-      <section className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 mt-3 md:mt-4">
-        <div className="card-soft grid grid-cols-2 lg:grid-cols-4 lg:divide-x divide-blush">
-          {tiles.map((t) => (
-            <Link key={t.title} href={t.href} className="flex flex-col items-center gap-1.5 px-4 py-6 text-center text-wine hover:bg-blush-soft/50 transition-colors first:rounded-l-3xl last:rounded-r-3xl">
-              {t.icon}
-              <span className="mt-1 font-bold text-ink">{t.title}</span>
-              <span className="text-xs text-ink/60">{t.text}</span>
-            </Link>
+      <section className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 -mt-1 pt-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          {tiles.map((t, i) => (
+            <Reveal key={t.title} delay={i * 80}>
+              <Link
+                href={t.href}
+                className="group card-soft flex flex-col items-center gap-1.5 px-4 py-6 text-center text-wine transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_-14px_rgba(126,21,51,.35)]"
+              >
+                <span className="grid place-items-center w-16 h-16 rounded-full bg-blush-soft transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
+                  {t.icon}
+                </span>
+                <span className="mt-1 font-bold text-ink">{t.title}</span>
+                <span className="text-xs text-ink/60">{t.text}</span>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </section>
+
+      <SeasonBoards items={items} />
 
       {/* Most loved */}
-      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-12 pb-6">
-        <div className="flex items-end justify-between gap-4">
-          <h2 className="font-display font-bold text-3xl sm:text-4xl text-wine-dark">
-            Our Most Loved Drinks <span className="text-berry">♡</span>
-          </h2>
-          <Link href="/menu" className="shrink-0 text-sm font-semibold text-berry hover:text-berry-dark">
-            See full menu ›
-          </Link>
-        </div>
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-          {loved.map((item) => (
-            <ProductCard key={item.id} item={item} />
-          ))}
-        </div>
-      </section>
+      {loved.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-14 pb-16">
+          <Reveal className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[0.2em] text-berry">Fan favorites</p>
+              <h2 className="mt-1 font-display font-bold text-3xl sm:text-4xl text-wine-dark">
+                Our Most Loved Drinks <span className="text-berry">♡</span>
+              </h2>
+            </div>
+            <Link href="/menu" className="shrink-0 text-sm font-semibold text-berry hover:text-berry-dark">
+              See full menu ›
+            </Link>
+          </Reveal>
+          {/* A swipeable shelf of favorites */}
+          <div className="mt-6 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 flex gap-4 sm:gap-5 overflow-x-auto snap-x snap-mandatory pb-4 [scrollbar-width:thin]">
+            {loved.map((item, i) => (
+              <Reveal key={item.id} delay={i * 90} className="snap-start shrink-0 w-[46%] sm:w-[31%] lg:w-[23.5%]">
+                <ProductCard item={item} />
+              </Reveal>
+            ))}
+          </div>
+        </section>
+      )}
 
-      {/* Visit us strip — real, live data (address/hours), not baked into a
-          graphic, so it can't go stale and reflows properly on mobile. */}
-      <section id="visit" className="pb-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid sm:grid-cols-2 rounded-3xl overflow-hidden shadow-sm">
-            <div className="relative h-56 sm:h-auto">
+      <ChismeCorner />
+
+      {/* Visit — storefront photo + the hours sign (live data, never baked into an image) */}
+      <section id="visit" className="py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 grid lg:grid-cols-[1.15fr_1fr] gap-8 items-center">
+          <Reveal className="relative">
+            <div className="relative aspect-[4/3] rounded-[2rem] overflow-hidden shadow-[0_24px_50px_-20px_rgba(70,10,20,.45)]">
               <Image
                 src="/images/storefront.png"
                 alt="Chismesito Cafe storefront in Richmond, CA"
                 fill
-                sizes="(min-width: 640px) 50vw, 100vw"
+                sizes="(min-width: 1024px) 55vw, 100vw"
                 className="object-cover"
               />
-            </div>
-            <div className="bg-blush p-8 sm:p-10 flex flex-col justify-center gap-4">
-              <h2 className="font-display font-bold text-2xl text-maroon">Visit Us in Richmond, CA</h2>
-              <p className="text-ink/80">{business.address}</p>
-              <p className="text-ink/80">{business.hours}</p>
-              <div className="flex flex-wrap items-center gap-3 mt-2">
-                <Link
-                  href="/contact"
-                  className="rounded-full bg-rose hover:bg-rose-dark text-white text-sm font-semibold px-5 py-2.5 transition-colors"
-                >
-                  Get Directions
-                </Link>
-                <a
-                  href={business.instagramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-full border-2 border-maroon text-maroon p-2.5 hover:bg-maroon hover:text-cream transition-colors"
-                  aria-label="Follow us on Instagram"
-                >
-                  <InstagramIcon className="w-5 h-5" />
-                </a>
+              <div className="absolute inset-0 bg-gradient-to-t from-wine-dark/85 via-wine-dark/10 to-transparent" />
+              <div className="absolute bottom-0 inset-x-0 p-6 sm:p-8 text-white">
+                <p className="font-script text-3xl text-[#ffe3b8]">Ven a visitarnos</p>
+                <h2 className="font-display font-bold text-3xl sm:text-4xl">Richmond, CA</h2>
+                <p className="mt-1 text-white/85">{business.address}</p>
+                <div className="mt-4 flex flex-wrap items-center gap-3">
+                  <Link
+                    href="/contact"
+                    className="rounded-full bg-white text-wine-dark text-sm font-semibold px-5 py-2.5 hover:bg-cream transition-colors"
+                  >
+                    Get Directions
+                  </Link>
+                  <a
+                    href={business.instagramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border-2 border-white/80 p-2.5 hover:bg-white hover:text-wine-dark transition-colors"
+                    aria-label="Follow us on Instagram"
+                  >
+                    <InstagramIcon className="w-5 h-5" />
+                  </a>
+                </div>
               </div>
             </div>
-          </div>
+          </Reveal>
+          <Reveal delay={150}>
+            <HoursBoard />
+          </Reveal>
         </div>
       </section>
     </div>
