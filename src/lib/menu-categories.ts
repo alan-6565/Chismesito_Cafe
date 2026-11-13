@@ -7,6 +7,7 @@ export const CATEGORY_ORDER = [
   "Matcha",
   "Chai",
   "Coffee & Hot Drinks",
+  "Holiday Menu",
   "Fall Menu",
   "Refreshers and Lemonade",
   "Sago",
