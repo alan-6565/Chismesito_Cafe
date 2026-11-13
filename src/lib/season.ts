@@ -25,3 +25,11 @@ export function seasonFor(date: Date = new Date()): Season {
 
 /** Inline <head> script: sets <html data-season> before first paint, even on pre-built pages. */
 export const seasonScript = `(function(){try{var p=new Intl.DateTimeFormat("en-US",{timeZone:"America/Los_Angeles",month:"numeric",day:"numeric"}).formatToParts(new Date());var m=+p.find(function(x){return x.type==="month"}).value,d=+p.find(function(x){return x.type==="day"}).value;var v=m*100+d;var s=(v>=1101||v<=106)?"holiday":(v>=901&&v<=1031)?"fall":"classic";var q=new URLSearchParams(location.search).get("season");if(q==="holiday"||q==="fall"||q==="classic")s=q;document.documentElement.setAttribute("data-season",s)}catch(e){}})();`;
+
+/**
+ * Inline <head> script: plays the opening intro (IntroCurtain) on the first
+ * page of a browser session only. ?intro=1 forces it for previews. Skipped on
+ * /admin and for reduced-motion users. The attribute is removed once the
+ * curtain has opened so it never sits on top of the page.
+ */
+export const introScript = `(function(){try{var h=document.documentElement,q=new URLSearchParams(location.search).get("intro")==="1";if(location.pathname.indexOf("/admin")===0)return;if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;if(!q&&sessionStorage.getItem("cc-intro"))return;sessionStorage.setItem("cc-intro","1");h.setAttribute("data-intro","");setTimeout(function(){h.removeAttribute("data-intro")},3500)}catch(e){}})();`;

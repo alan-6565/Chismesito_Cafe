@@ -246,3 +246,52 @@ body {
   from { opacity: 0; transform: scale(0.97); }
   to { opacity: 1; transform: none; }
 }
+
+/* ───────────── Opening intro (components/IntroCurtain.tsx) ─────────────
+   Only rendered visible when <html data-intro> is set (first page of a
+   session). Logo pops in, then a circle opens from the middle. */
+.not-holiday { display: block; }
+:root[data-season="holiday"] .not-holiday { display: none; }
+
+@property --hole {
+  syntax: "<length>";
+  inherits: false;
+  initial-value: 0px;
+}
+.intro { display: none; }
+:root[data-intro] .intro {
+  display: flex;
+  --hole: 0px;
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 1px));
+  mask: radial-gradient(circle at 50% 50%, transparent var(--hole), #000 calc(var(--hole) + 1px));
+  animation: intro-open 1.05s cubic-bezier(0.7, 0, 0.2, 1) 2.3s forwards;
+}
+@keyframes intro-open {
+  to { --hole: 150vmax; visibility: hidden; }
+}
+.intro-logo { animation: intro-pop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both; }
+@keyframes intro-pop {
+  from { transform: scale(0.3) rotate(-12deg); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.intro-wreath { animation: intro-spin 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s both; }
+@keyframes intro-spin {
+  from { transform: rotate(-90deg) scale(0.8); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.intro-line { animation: intro-up 0.7s ease 0.75s both; }
+.intro-sub { animation: intro-up 0.7s ease 1.05s both; }
+@keyframes intro-up {
+  from { transform: translateY(14px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+/* twinkling bulbs */
+.bulb { box-shadow: 0 0 12px 3px currentColor; animation: twinkle 1s ease-in-out infinite alternate; }
+@keyframes twinkle {
+  from { opacity: 1; filter: brightness(1.15); }
+  to { opacity: 0.45; filter: brightness(0.8); box-shadow: 0 0 4px 1px currentColor; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-intro] .intro { display: none; }
+  .bulb { animation: none; }
+}

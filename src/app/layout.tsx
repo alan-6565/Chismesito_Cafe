@@ -11,7 +11,8 @@ import OrderingPausedBanner from "@/components/OrderingPausedBanner";
 import StructuredData from "@/components/StructuredData";
 import { CartProvider } from "@/lib/cart-context";
 import { business } from "@/lib/data";
-import { seasonScript } from "@/lib/season";
+import { introScript, seasonScript } from "@/lib/season";
+import IntroCurtain from "@/components/IntroCurtain";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -71,9 +72,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         {/* Seasonal skin (holiday / fall / classic) — set before paint; ?season= overrides for previews */}
         <script dangerouslySetInnerHTML={{ __html: seasonScript }} />
+        {/* Opening intro, first page of each visit (?intro=1 to preview) */}
+        <script dangerouslySetInnerHTML={{ __html: introScript }} />
       </head>
       <body className="min-h-full flex flex-col bg-cream text-ink">
         <StructuredData />
+        <HideOnAdmin>
+          <IntroCurtain />
+        </HideOnAdmin>
         <CartProvider>
           <HideOnAdmin>
             <OrderingPausedBanner />
