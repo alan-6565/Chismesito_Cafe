@@ -106,8 +106,6 @@ export default function ProductOptionsModal({
   // and add-ons as a checklist.
   const cupScale = (i: number) => ["w-4 h-4", "w-5 h-5", "w-6 h-6"][Math.min(i, 2)];
   const sizeHint = (label: string) => label.match(/\d+\s*oz/i)?.[0] ?? "";
-  const sizeName = (label: string, i: number, n: number) =>
-    /^\d+\s*oz$/i.test(label.trim()) ? (n === 3 ? ["Small", "Medium", "Large"][i] : n === 2 ? ["Regular", "Large"][i] : label) : label.replace(/\(?\d+\s*oz\)?/i, "").trim() || label;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-6">
@@ -123,7 +121,7 @@ export default function ProductOptionsModal({
 
         <div className="overflow-y-auto grid sm:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] gap-6 p-5 sm:p-7">
           {/* Photo */}
-          <div className="relative aspect-[4/3] sm:aspect-[4/5] rounded-3xl overflow-hidden bg-gradient-to-br from-blush-soft to-blush sm:self-start">
+          <div className="relative aspect-[4/3] sm:aspect-[4/5] rounded-3xl [clip-path:inset(0_round_1.5rem)] bg-gradient-to-br from-blush-soft to-blush self-start">
             {item.imageUrl ? (
               <Image src={item.imageUrl} alt={item.name} fill sizes="(min-width: 640px) 420px, 100vw" className="object-cover" />
             ) : look ? (
@@ -158,7 +156,6 @@ export default function ProductOptionsModal({
                 <div className="grid grid-cols-3 gap-2.5">
                   {item.sizes.map((size, i) => {
                     const on = sizeId === size.id;
-                    const extra = size.priceCents - (item.sizes[0]?.priceCents ?? 0);
                     return (
                       <button
                         key={size.id}
@@ -170,10 +167,9 @@ export default function ProductOptionsModal({
                         <svg viewBox="0 0 24 24" className={cupScale(i)} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" aria-hidden>
                           <path d="M6 7h12l-1.3 13H7.3L6 7ZM5 4.5h14V7H5zM9 11h6" />
                         </svg>
-                        <span className="text-sm font-semibold leading-none">{sizeName(size.label, i, item.sizes.length)}</span>
+                        <span className="text-base font-bold leading-none">{sizeHint(size.label) || size.label}</span>
                         <span className={`text-xs ${on ? "text-berry/80" : "text-ink/50"}`}>
-                          {sizeHint(size.label) || (extra > 0 ? `+${formatCents(extra)}` : "")}
-                          {sizeHint(size.label) && extra > 0 ? ` · +${formatCents(extra)}` : ""}
+                          {formatCents(size.priceCents)}
                         </span>
                       </button>
                     );
@@ -263,9 +259,9 @@ export default function ProductOptionsModal({
           <button
             onClick={handleAdd}
             disabled={!canAdd || paused}
-            className="flex-1 h-12 rounded-full bg-berry hover:bg-berry-dark disabled:opacity-50 text-white font-semibold text-lg px-6 flex items-center justify-between shadow-lg shadow-berry/25 transition-colors"
+            className="flex-1 min-w-0 h-12 rounded-full bg-berry hover:bg-berry-dark disabled:opacity-50 text-white font-semibold text-base sm:text-lg px-5 sm:px-6 flex items-center justify-between shadow-lg shadow-berry/25 transition-colors"
           >
-            <span className="truncate">{paused ? "Ordering unavailable right now" : canAdd ? "Add to Order" : `Choose ${missingRequired[0]?.label}`}</span>
+            <span className="truncate">{paused ? "Ordering unavailable right now" : canAdd ? "Add to Order" : `Choose ${missingRequired[0]?.label.replace(/\s*options?$/i, "")}`}</span>
             <span className="shrink-0 pl-3">{formatCents(totalCents)}</span>
           </button>
         </div>
