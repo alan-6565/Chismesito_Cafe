@@ -49,7 +49,7 @@ export const business = {
   state,
   zip,
   address: `${streetAddress}, ${city}, ${state} ${zip}`,
-  hours: "Mon–Fri 7:00 AM – 7:00 PM · Sat–Sun 8:00 AM – 7:00 PM",
+  hours: "Mon–Fri 6:00 AM – 5:00 PM · Sat–Sun 7:00 AM – 5:00 PM",
   phone: "(510) 691-3583",
   instagram: "@chismesito__cafe",
   instagramUrl: "https://www.instagram.com/chismesito__cafe",
@@ -63,6 +63,6 @@ export const business = {
 // so the "Open Now" badge and search-engine structured data can't drift out
 // of sync with each other. days: 0=Sun..6=Sat.
 export const openingHours: { days: number[]; opens: string; closes: string }[] = [
-  { days: [1, 2, 3, 4, 5], opens: "07:00", closes: "19:00" },
-  { days: [0, 6], opens: "08:00", closes: "19:00" },
+  { days: [1, 2, 3, 4, 5], opens: "06:00", closes: "17:00" },
+  { days: [0, 6], opens: "07:00", closes: "17:00" },
 ];
