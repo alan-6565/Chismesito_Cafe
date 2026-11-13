@@ -2,14 +2,19 @@
 // The real menu (items, sizes, modifiers) lives in Supabase; see
 // src/lib/menu.ts and scripts/seed-menu.ts.
 
-export const gallery = [
-  { id: 1, emoji: "☕", label: "Iced Coffee" },
-  { id: 2, emoji: "💚", label: "Matcha", image: "/images/gallery-matcha.png" },
-  { id: 4, emoji: "🥐", label: "Bakery", image: "/images/bakery.png" },
-  { id: 5, emoji: "🏪", label: "Storefront", image: "/images/storefront.png" },
-  { id: 6, emoji: "🌸", label: "Spring Menu" },
-  { id: 7, emoji: "📸", label: "Customers", image: "/images/community.png" },
-  { id: 8, emoji: "🍰", label: "Dessert Cups", image: "/images/gallery-cookies.png" },
+// Cafe photos for the Gallery page. Drink photos uploaded in /admin/menu are
+// added automatically on top of these. w/h are the real pixel sizes so the
+// wall keeps each photo's true shape.
+export type GalleryPhoto = { src: string; alt: string; tag: "Drinks" | "The Cafe" | "Our People"; w: number; h: number };
+
+export const gallery: GalleryPhoto[] = [
+  { src: "/images/gallery-matcha.png", alt: "Grab-and-go matchas and strawberry drinks in the fridge", tag: "Drinks", w: 1010, h: 1404 },
+  { src: "/images/storefront.png", alt: "The Chismesito Cafe storefront on Barrett Ave", tag: "The Cafe", w: 1682, h: 900 },
+  { src: "/images/community.png", alt: "Friends toasting Chismesito iced drinks", tag: "Our People", w: 724, h: 876 },
+  { src: "/images/about-street.png", alt: "Chismesito Cafe sign over Barrett Ave", tag: "The Cafe", w: 468, h: 882 },
+  { src: "/images/about-drinks.png", alt: "A lineup of handcrafted iced drinks", tag: "Drinks", w: 1000, h: 540 },
+  { src: "/images/bakery.png", alt: "The pastry case at the counter", tag: "The Cafe", w: 746, h: 922 },
+  { src: "/images/contact-storefront.png", alt: "Outside Chismesito Cafe in Richmond", tag: "The Cafe", w: 1200, h: 1046 },
 ];
 
 export const promotion = {

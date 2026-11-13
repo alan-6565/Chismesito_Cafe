@@ -29,8 +29,9 @@ export default function MenuBrowser({ items, categories }: { items: MenuItemFull
     const params = new URLSearchParams(location.search);
     if (params.get("search")) searchRef.current?.focus();
     const cat = params.get("category");
-    if (!cat || !categories.includes(cat)) return;
-    const t = setTimeout(() => setActive(cat), 0);
+    const q = params.get("q"); // from Gallery "Order this"
+    if (!q && (!cat || !categories.includes(cat))) return;
+    const t = setTimeout(() => (q ? setQuery(q) : setActive(cat!)), 0);
     return () => clearTimeout(t);
   }, [categories]);
 
