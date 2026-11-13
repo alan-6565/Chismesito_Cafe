@@ -194,3 +194,15 @@ body {
     transition: none;
   }
 }
+
+/* Liquid surface ripple in DrinkCup */
+@keyframes drink-wave {
+  from { transform: translateX(0); }
+  to { transform: translateX(60px); }
+}
+.drink-wave {
+  animation: drink-wave 3.5s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .drink-wave { animation: none; }
+}

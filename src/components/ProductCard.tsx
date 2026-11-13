@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Logo from "./Logo";
+import DrinkCup, { lookFor } from "./DrinkCup";
 import ProductOptionsModal from "./ProductOptionsModal";
 import { formatCents } from "@/lib/money";
 import type { MenuItemFull } from "@/lib/menu";
@@ -29,6 +30,7 @@ export default function ProductCard({ item }: { item: MenuItemFull; layout?: "st
   const [open, setOpen] = useState(false);
   const [fav, setFav] = useState(false);
   const soldOut = !item.available;
+  const look = item.imageUrl ? null : lookFor(item.name, item.category);
 
   useEffect(() => {
     const t = setTimeout(() => setFav(readFavs().includes(item.slug)), 0);
@@ -60,6 +62,10 @@ export default function ProductCard({ item }: { item: MenuItemFull; layout?: "st
               sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
+          ) : look ? (
+            <span className="absolute inset-0 flex items-end justify-center pt-4 bg-[radial-gradient(circle_at_50%_70%,#fff_0%,transparent_65%)]">
+              <DrinkCup look={look} className="h-[92%] w-auto transition-transform duration-500 group-hover:-translate-y-1.5 group-hover:rotate-[-3deg]" />
+            </span>
           ) : (
             <span className="absolute inset-0 flex items-center justify-center">
               <Logo size="lg" />

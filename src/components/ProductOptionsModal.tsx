@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import Image from "next/image";
 import { useCart } from "@/lib/cart-context";
 import { formatCents } from "@/lib/money";
+import DrinkCup, { fillFor, lookFor } from "./DrinkCup";
 import type { MenuItemFull } from "@/lib/menu";
 
 export default function ProductOptionsModal({
@@ -39,6 +40,13 @@ export default function ProductOptionsModal({
     }
     return sum;
   }, [selections, item.modifierGroups]);
+
+  // The illustrated cup reacts to choices: size → how full, foam → foam cap, drizzle → drizzle
+  const look = lookFor(item.name, item.category);
+  const chosenLabels = item.modifierGroups.flatMap((g) => g.options.filter((o) => selections[g.id]?.has(o.id)).map((o) => o.label.toLowerCase()));
+  const cupFill = fillFor(selectedSize?.label, item.sizes.map((s) => s.label));
+  const cupFoam = look ? (look.foam || chosenLabels.some((l) => l.includes("foam"))) : false;
+  const cupDrizzle = chosenLabels.some((l) => l.includes("drizzle"));
 
   const unitPriceCents = (selectedSize?.priceCents ?? item.basePriceCents) + modifierTotalCents;
   const totalCents = unitPriceCents * quantity;
@@ -118,6 +126,10 @@ export default function ProductOptionsModal({
           <div className="relative aspect-[4/3] sm:aspect-[4/5] rounded-3xl overflow-hidden bg-gradient-to-br from-blush-soft to-blush sm:self-start">
             {item.imageUrl ? (
               <Image src={item.imageUrl} alt={item.name} fill sizes="(min-width: 640px) 420px, 100vw" className="object-cover" />
+            ) : look ? (
+              <span className="absolute inset-0 flex items-end justify-center pb-2 bg-[radial-gradient(circle_at_50%_65%,#fff_0%,transparent_70%)]">
+                <DrinkCup look={look} fill={cupFill} foam={cupFoam} drizzle={cupDrizzle} className="h-[92%] w-auto" />
+              </span>
             ) : (
               <span className="absolute inset-0 flex items-center justify-center">
                 <span className="relative w-40 h-32">
@@ -137,7 +149,12 @@ export default function ProductOptionsModal({
 
             {item.sizes.length > 0 && (
               <div>
-                <h3 className="font-bold text-ink mb-2">Size</h3>
+                <div className="mb-2 flex items-end justify-between gap-3">
+                  <h3 className="font-bold text-ink">Size</h3>
+                  {item.imageUrl && look && (
+                    <DrinkCup look={look} fill={cupFill} foam={cupFoam} drizzle={cupDrizzle} className="h-16 w-auto -mb-1" />
+                  )}
+                </div>
                 <div className="grid grid-cols-3 gap-2.5">
                   {item.sizes.map((size, i) => {
                     const on = sizeId === size.id;
