@@ -31,6 +31,11 @@ export default function Footer() {
             Terms of Service
           </Link>
         </p>
+        <p className="text-xs text-cream/40">
+          <a href="https://www.jcwebs.tech" target="_blank" rel="noopener" className="hover:text-cream">
+            Made by JCWebs
+          </a>
+        </p>
       </div>
     </footer>
   );
