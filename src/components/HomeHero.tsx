@@ -144,21 +144,22 @@ function BannerSlide({ src, month }: { src: string; month: string }) {
   );
 }
 
-function PhotoSlide({ src, alt, href }: { src: string; alt: string; href: string }) {
+function PhotoSlide({ src, alt, href, priority }: { src: string; alt: string; href: string; priority?: boolean }) {
   return (
     <Link href={href} className="relative block h-full bg-cream">
-      <Image src={src} alt={alt} fill sizes="100vw" className="object-cover" />
+      <Image src={src} alt={alt} fill sizes="100vw" priority={priority} className="object-cover" />
     </Link>
   );
 }
 
 export default function HomeHero({ month }: { month: string }) {
   const slides = [
+    <PhotoSlide key="hero" src="/images/hero.png" alt="Coffee with a little chisme. Specialty drinks, good vibes, and a place to spill the tea." href="/menu" priority />,
     BANNERS[month] ? <BannerSlide key="giveaway" src={BANNERS[month]} month={month} /> : <GiveawaySlide key="giveaway" month={month} />,
-    <PhotoSlide key="hero" src="/images/hero.png" alt="Coffee with a little chisme. Specialty drinks, good vibes, and a place to spill the tea." href="/menu" />,
     <PhotoSlide key="fall" src="/images/fall-menu-banner.png" alt="Chismesito Cafe Fall Menu" href="/menu" />,
   ];
   const banner = Boolean(BANNERS[month]);
+  const G = 1; // position of the giveaway slide
   const [index, setIndex] = useState(0);
   const [hover, setHover] = useState(false);
 
@@ -166,7 +167,7 @@ export default function HomeHero({ month }: { month: string }) {
     if (hover) return;
     // Without a banner image, phones only get the giveaway slide, so they never rotate
     const wide = () => banner || matchMedia("(min-width: 768px)").matches;
-    const t = setInterval(() => setIndex((i) => (wide() ? (i + 1) % slides.length : 0)), 7000);
+    const t = setInterval(() => setIndex((i) => (wide() ? (i + 1) % slides.length : G)), 7000);
     return () => clearInterval(t);
   }, [hover, slides.length, banner]);
 
@@ -178,7 +179,7 @@ export default function HomeHero({ month }: { month: string }) {
           <div
             key={i}
             aria-hidden={i !== index}
-            className={`${banner ? "absolute" : i === 0 ? "relative md:absolute max-md:opacity-100! max-md:pointer-events-auto!" : "hidden md:block absolute"} inset-0 transition-opacity duration-700 ${i === index ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            className={`${banner ? "absolute" : i === G ? "relative md:absolute max-md:opacity-100! max-md:pointer-events-auto!" : "hidden md:block absolute"} inset-0 transition-opacity duration-700 ${i === index ? "opacity-100" : "opacity-0 pointer-events-none"}`}
           >
             {s}
           </div>
@@ -192,7 +193,7 @@ export default function HomeHero({ month }: { month: string }) {
             onClick={() => setIndex(i)}
             aria-label={`Show banner ${i + 1}`}
             className={`h-2 rounded-full transition-all ${
-              banner ? (i === index ? "w-6 bg-wine" : "w-2 bg-wine/30") : `${i === index ? "w-6 bg-white" : "w-2 bg-white/60"} ${index !== 0 ? "ring-1 ring-ink/20" : ""}`
+              banner ? (i === index ? "w-6 bg-wine" : "w-2 bg-wine/30") : `${i === index ? "w-6 bg-white" : "w-2 bg-white/60"} ${index !== G ? "ring-1 ring-ink/20" : ""}`
             }`}
           />
         ))}
